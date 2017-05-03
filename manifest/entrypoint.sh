@@ -16,16 +16,18 @@ function init {
     echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
     sleep ${STARTUP_TIMEOUT}
 
+    DOMAIN_NAME="$(echo $PANEL_URL | awk -F/ '{print $3}')"
+
     # Checks if we have SSL enabled or not, and updates the configuration to what is desired.
     if [ "${SSL}" == "true" ]; then
         echo "Enabling SSL"
         
-        envsubst '${PANEL_URL},${SSL_CERT},${SSL_CERT_KEY}' \
+        envsubst '${DOMAIN_NAME},${SSL_CERT},${SSL_CERT_KEY}' \
         < /etc/nginx/templates/https.conf.tmpl > /etc/nginx/conf.d/default.conf
     else
         echo "Disabling SSL"
         
-        envsubst '${PANEL_URL}' \
+        envsubst '${DOMAIN_NAME}' \
         < /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
     fi
 
@@ -36,12 +38,12 @@ function init {
 function initConfig {
 
     # Create the storage directory
-    if [ ! -d /data/storage ]; then
-        cp ./storage.template /data/storage -pr
+    if [ ! -d ${STORAGE_DIR} ]; then
+        cp ./storage.template ${STORAGE_DIR} -pr
     fi
 
     rm -rf ./storage
-    ln -s /data/storage ./storage
+    ln -s ${STORAGE_DIR} ./storage
     
     # Always destroy .env on startup
     rm .env -rf
