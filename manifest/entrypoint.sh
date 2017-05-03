@@ -32,10 +32,16 @@ function init {
     initConfig
 }
 
+# Build the config only
 function initConfig {
-    # Might looks like overkill, however we should optimize and clear the config cache
-    php artisan optimize
-    php artisan config:cache
+
+    # Create the storage directory
+    if [ ! -d /data/storage ]; then
+        cp ./storage.template /data/storage -pr
+    fi
+
+    rm -rf ./storage
+    ln -s /data/storage ./storage
     
     # Always destroy .env on startup
     rm .env -rf
@@ -55,17 +61,21 @@ function initConfig {
 # Updates a configuration using variables from the .env file and shell variables
 function updateConfiguration {
 
+    # Might looks like overkill, however we should optimize and clear the config cache
+    php artisan optimize
+    php artisan config:cache
+
     php artisan pterodactyl:env -n \
-    --url=${PANEL_URL} \
-    --dbhost=${DB_HOST} \
-    --dbport=${DB_PORT} \
-    --dbname=${DB_DATABASE} \
-    --dbuser=${DB_USERNAME} \
-    --dbpass=${DB_PASSWORD} \
-    --driver=${CACHE_DRIVER} \
+    --url="${PANEL_URL}" \
+    --dbhost="${DB_HOST}" \
+    --dbport="${DB_PORT}" \
+    --dbname="${DB_DATABASE}" \
+    --dbuser="${DB_USERNAME}" \
+    --dbpass="${DB_PASSWORD}" \
+    --driver="${CACHE_DRIVER}" \
     --session-driver=database \
     --queue-driver=database \
-    --timezone=${TIMEZONE}
+    --timezone="${TIMEZONE}"
 
     php artisan pterodactyl:mail -n \
     --driver="${MAIL_DRIVER}" \

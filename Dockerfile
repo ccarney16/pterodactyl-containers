@@ -23,8 +23,10 @@ RUN curl -Lo "${PANEL_VERSION}.tar.gz" https://github.com/Pterodactyl/Panel/arch
  && tar --strip-components=1 -xzvf ${PANEL_VERSION}.tar.gz \
  && rm "${PANEL_VERSION}.tar.gz" \
  && chmod -R 777 storage/* bootstrap/cache \
+ && cp ./storage storage.template -rp \
  && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
  && composer install --ansi --no-dev \
+ && mv ./storage storage.template \
  && chown nginx:nginx * -R
 
 COPY ./manifest /

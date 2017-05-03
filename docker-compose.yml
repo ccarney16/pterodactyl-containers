@@ -48,7 +48,6 @@ services:
     - SSL=false
     - SSL_CERT=/certs/live/localhost/fullchain.pem
     - SSL_CERT_KEY=/certs/live/localhost/privkey.pem
-    - SSL_LE_WEBROOT=/certs/.webroot/ # Webroot for Let's Encrypt
 
     # Panel Variables, These are only needed when doing initial setup.
     # When doing migration, the container will attempt to get the environment
@@ -69,11 +68,7 @@ services:
     - MAIL_DRIVER=mail
     - MAIL_EMAIL=admin@localhost
     - MAIL_FROM_NAME=Test Panel
-
-    - USER_EMAIL=admin@pterodactyl.io
-    - USER_PASS=PlsCh@ng3M3
-    - USER_IS_ADMIN=true
-    image: quay.io/ccarney/pterodactyl-panel:v0.6.0-rc.1
+    image: quay.io/ccarney/pterodactyl-panel:testing
     ports:
     - 80:80
     - 443:443
