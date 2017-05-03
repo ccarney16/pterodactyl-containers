@@ -16,7 +16,8 @@ function init {
     echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
     sleep ${STARTUP_TIMEOUT}
 
-    DOMAIN_NAME="$(echo $PANEL_URL | awk -F/ '{print $3}')"
+    export DOMAIN_NAME="$(echo $PANEL_URL | awk -F/ '{print $3}')"
+    
 
     # Checks if we have SSL enabled or not, and updates the configuration to what is desired.
     if [ "${SSL}" == "true" ]; then
