@@ -1,0 +1,92 @@
+version: '2'
+services:
+
+##
+# Panel Cache
+##
+  cache:
+    image: memcached:1.4-alpine
+
+##
+# If you want to encrypt your connection, it is recommended to remove comments and add a cronjob.
+# On initial setup, run "docker-compose run --rm certbot certonly --webroot -w /le-webroot 
+# -d <domain>" to recieve a certificate
+##
+#  certbot:
+#    command: renew
+#    image: certbot/certbot:v1.13.0
+#    volumes:
+#    - ./certs:/etc/letsencrypt
+
+##
+# If you rely on another MySQL/MariaDB instance, this can be safely removed.
+# Make sure to remove the dependency from the panel
+##
+  mysql:
+    environment:
+      - "MYSQL_ROOT_PASSWORD=apassword"
+      - "MYSQL_DATABASE=pterodactyl"
+      - "MYSQL_USER=ptero"
+      - "MYSQL_PASSWORD=pterodbpass"
+    volumes:
+    - ./db:/var/lib/mysql
+    image: mariadb:10.0
+
+##
+# The main service.
+# Ensure that all variables/data is correct.
+##
+  panel:
+    container_name: pterodactyl-panel
+    depends_on:
+    - cache
+    - mysql
+    environment:
+    - PANEL_URL=localhost
+
+    # SSL Encryption, useful if you dont run behind a reverse proxy
+    - SSL=false
+    - SSL_CERT=/certs/live/localhost/fullchain.pem
+    - SSL_CERT_KEY=/certs/live/localhost/privkey.pem
+    - SSL_LE_WEBROOT=/certs/.webroot/ # Webroot for Let's Encrypt
+
+    # Panel Variables, These are only needed when doing initial setup.
+    # When doing migration, the container will attempt to get the environment
+    # variables from the .env file.
+    - TIMEZONE=UTC
+
+    - CACHE_DRIVER=memcached
+
+    - MEMCACHED_HOST=cache
+    - MEMCACHED_PORT=11211
+
+    - DB_HOST=mysql
+    - DB_PORT=3306
+    - DB_DATABASE=pterodactyl
+    - DB_USERNAME=ptero
+    - DB_PASSWORD=pterodbpass
+
+    - MAIL_DRIVER=mail
+    - MAIL_EMAIL=admin@localhost
+    - MAIL_FROM_NAME=Test Panel
+
+    - USER_EMAIL=admin@pterodactyl.io
+    - USER_PASS=PlsCh@ng3M3
+    - USER_IS_ADMIN=true
+    image: quay.io/ccarney/pterodactyl-panel:v0.6.0-rc.1
+    ports:
+    - 80:80
+    - 443:443
+    restart: always
+    volumes:
+    - ./data:/data
+
+    # - ./certs:/certs
+
+##
+# PLACEHOLDER
+# --------------------------
+# If you plan on running the daemon on the same machine, uncomment the section below
+##
+#  daemon:
+#    image: quay.io/parkervcp/pterodactyl-daemon:something
