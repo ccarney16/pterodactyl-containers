@@ -1,3 +1,6 @@
+##
+# Pterodactyl Panel Docker Setup by ccarney
+##
 version: '2'
 services:
 
@@ -56,6 +59,7 @@ services:
 
     - CACHE_DRIVER=memcached
 
+    # Rely on an external source so we can put the panel container down when updates are needed
     - MEMCACHED_HOST=cache
     - MEMCACHED_PORT=11211
 
@@ -67,7 +71,7 @@ services:
 
     - MAIL_DRIVER=mail
     - MAIL_EMAIL=admin@localhost
-    - MAIL_FROM_NAME=Test Panel
+    - MAIL_FROM_NAME=Zyphinia Panel
     image: quay.io/ccarney/pterodactyl-panel:v0.6.0-rc.1
     ports:
     - 80:80

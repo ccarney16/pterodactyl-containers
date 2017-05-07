@@ -1,13 +1,44 @@
 #!/bin/sh
 
 ###
-# /entrypoint.sh - Manages the startup of the pterodactyl panel
+# /entrypoint.sh - Manages the startup of pterodactyl panel
 ###
 
 set -e
 
-# Runs the initial configuration on every startup
+# Prep Container for usage
 function init {
+    # Create the storage directory
+    if [ ! -d ${STORAGE_DIR} ]; then
+        cp ./storage.template ${STORAGE_DIR} -pr
+    fi
+
+    rm -rf ./storage
+    ln -s ${STORAGE_DIR} ./storage
+    
+    # Always destroy .env symlink on startup
+    rm .env -rf
+    ln -s "${CONFIG_FILE}" .env
+
+    if [ ! -e "${CONFIG_FILE}" ] || [ ! -s "${CONFIG_FILE}" ]; then
+        echo "Missing Configuration file, Creating..."
+        
+        cp .env.example "${CONFIG_FILE}"
+
+        php artisan optimize
+        php artisan config:cache
+        php artisan key:generate --force
+        
+        updateConfiguration
+    fi
+
+    php artisan optimize
+    php artisan config:cache
+
+}
+
+# Runs the initial configuration on every startup
+function initServer {
     if [[ -z "${PANEL_URL}" ]]; then 
         echo "Missing environment variable 'PANEL_URL'! Please resolve it now and start the container back up..."
         exit 1;
@@ -16,8 +47,8 @@ function init {
     echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
     sleep ${STARTUP_TIMEOUT}
 
+    # Since Nginx does not support URL's, lets just pull the domain out of the URL
     export DOMAIN_NAME="$(echo $PANEL_URL | awk -F/ '{print $3}')"
-    
 
     # Checks if we have SSL enabled or not, and updates the configuration to what is desired.
     if [ "${SSL}" == "true" ]; then
@@ -31,43 +62,11 @@ function init {
         envsubst '${DOMAIN_NAME}' \
         < /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
     fi
-
-    initConfig
-}
-
-# Build the config only
-function initConfig {
-
-    # Create the storage directory
-    if [ ! -d ${STORAGE_DIR} ]; then
-        cp ./storage.template ${STORAGE_DIR} -pr
-    fi
-
-    rm -rf ./storage
-    ln -s ${STORAGE_DIR} ./storage
-    
-    # Always destroy .env on startup
-    rm .env -rf
-    ln -s "${CONFIG_FILE}" .env
-
-    if [ ! -e "${CONFIG_FILE}" ] || [ ! -s "${CONFIG_FILE}" ]; then
-        echo "Missing Configuration file, Creating..."
-        
-        cp .env.example "${CONFIG_FILE}"
-        
-        php artisan key:generate --force
-        
-        updateConfiguration
-    fi
 }
 
 # Updates a configuration using variables from the .env file and shell variables
 function updateConfiguration {
-
-    # Might looks like overkill, however we should optimize and clear the config cache
-    php artisan optimize
-    php artisan config:cache
-
+    
     php artisan pterodactyl:env -n \
     --url="${PANEL_URL}" \
     --dbhost="${DB_HOST}" \
@@ -94,27 +93,19 @@ function updateConfiguration {
     php artisan db:seed --force
 }
 
-# Adds a new user to pterodactyl
-function addUser {
-    php artisan pterodactyl:user
-}
-
 ## Start ##
+
+init
 
 case "$1" in
     p:start)
-        init
-
+        initServer
         exec supervisord --nodaemon
         ;;
     p:update)
-        initConfig
-
         updateConfiguration
         ;;
     *)
-        initConfig
-
         echo -e "No internal command specified, executing as shell command...\n"
         exec $@
         ;;

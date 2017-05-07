@@ -16,6 +16,10 @@ __This is the full list of environment variables.___
 #### WebServer Variables ####
 ---
 
+__*General Webserver Options*__
+* *UPLOAD_LIMIT*: Limit the size a user is allowed to upload through the webserver (default 100mb)
+
+__*Security Options*__
 * *SSL*: <True/False> Enables or Disables SSL.
 * *SSL_CERT*: Location for the SSL Certificate.
 * *SSL_CERT_KEY*: Location of the private key.
@@ -29,14 +33,14 @@ __This is the full list of environment variables.___
 
 * *CACHE_DRIVER*:
 
-
+__*Database Options*__
 * *DB_HOST*:
 * *DB_PORT*:
 * *DB_DATABASE*:
 * *DB_USERNAME*:
 * *DB_PASSWORD*:
 
-
+__*Mailing Options*__
 * *MAIL_DRIVER*:
 * *MAIL_EMAIL*:
 * *MAIL_FROM_NAME*:
