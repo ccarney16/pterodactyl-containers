@@ -71,7 +71,7 @@ services:
 
     - MAIL_DRIVER=mail
     - MAIL_EMAIL=admin@localhost
-    - MAIL_FROM_NAME=Zyphinia Panel
+    - MAIL_FROM_NAME=Pterodactyl Panel
     image: quay.io/ccarney/pterodactyl-panel:v0.6.0
     ports:
     - 80:80
@@ -83,9 +83,20 @@ services:
     # - ./certs:/certs
 
 ##
-# PLACEHOLDER
-# --------------------------
 # If you plan on running the daemon on the same machine, uncomment the section below
 ##
 #  daemon:
-#    image: quay.io/parkervcp/pterodactyl-daemon:something
+#    image: quay.io/ccarney/pterodactyl-daemon:v0.4.0
+#    depends_on:
+#    - panel
+#    ports:
+#    -  8080:8080
+#    volumes:
+#    - /srv/daemon/config:/srv/daemon/config
+#    - /srv/daemon/packs:/srv/daemon/packs
+#    - /srv/daemon/scripts:/srv/daemon/scripts
+#    - /srv/daemon-data:/srv/daemon-data
+#
+#    - /tmp/pterodactyl:/tmp/pterodactyl
+#
+#    - /var/run/docker.sock:/var/run/docker.sock
