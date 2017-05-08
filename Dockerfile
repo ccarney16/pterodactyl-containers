@@ -30,10 +30,11 @@ RUN curl -Lo "${PANEL_VERSION}.tar.gz" https://github.com/Pterodactyl/Panel/arch
 
 COPY ./manifest /
 
-VOLUME ["/data"]
+VOLUME [ "/data" ]
 
 # Expose HTTP and HTTPS ports
 EXPOSE 80 443
 
-ENTRYPOINT ["/bin/ash", "/entrypoint.sh"]
-CMD ["p:start"]
+ENTRYPOINT [ "/bin/ash", "/entrypoint.sh" ]
+
+CMD [ "p:start" ]

@@ -91,6 +91,7 @@ services:
 #    - panel
 #    ports:
 #    -  8080:8080
+#    restart: always
 #    volumes:
 #    - /srv/daemon/config:/srv/daemon/config
 #    - /srv/daemon/packs:/srv/daemon/packs
