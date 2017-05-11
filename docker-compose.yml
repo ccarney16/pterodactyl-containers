@@ -45,7 +45,7 @@ services:
     - cache
     - mysql
     environment:
-    - PANEL_URL=http://localhost/
+    - APP_URL=http://localhost/
 
     # SSL Encryption, useful if you dont run behind a reverse proxy
     - SSL=false

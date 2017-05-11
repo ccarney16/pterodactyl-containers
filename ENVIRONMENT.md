@@ -27,7 +27,7 @@ __*Security Options*__
 #### Panel Variables ####
 ---
 
-* *PANEL_URL*: URL you want to use for the panel [required on startup].
+* *APP_URL*: URL you want to use for the panel [required on startup].
 * *TIMEZONE*: 
 
 
