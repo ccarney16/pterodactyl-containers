@@ -18,8 +18,9 @@ RUN \
  php7-memcached php7-mbstring php7-openssl php7-pdo php7-phar php7-json php7-pdo_mysql \ 
  php7-session php7-tokenizer php7-ctype php7-zlib php7-zip supervisor \
  && mkdir -p /var/www/html /run/nginx \
- \
- && curl -Lo "${PANEL_VERSION}.tar.gz" https://github.com/Pterodactyl/Panel/archive/${PANEL_VERSION}.tar.gz \
+ 
+RUN \
+ curl -Lo "${PANEL_VERSION}.tar.gz" https://github.com/Pterodactyl/Panel/archive/${PANEL_VERSION}.tar.gz \
  && tar --strip-components=1 -xzvf ${PANEL_VERSION}.tar.gz \
  && rm "${PANEL_VERSION}.tar.gz" \
  && chmod -R 755 storage/* bootstrap/cache \
