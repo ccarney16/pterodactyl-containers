@@ -10,7 +10,7 @@ https://github.com/ccarney16/pterodactyl-panel-dockerfile
 Docker:
 
 It is recommended to create a environment file and run the following command:
-`docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:v0.6.0-rc.1`
+`docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:v0.6.1`
 
 __or__
 
