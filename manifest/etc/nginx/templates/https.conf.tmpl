@@ -4,7 +4,7 @@ server {
     server_name ${DOMAIN_NAME};
     # enforce https
 
-    location ^ /.well-known {
+    location /.well-known {
         alias /var/www/html/.well-known;
     }
 
