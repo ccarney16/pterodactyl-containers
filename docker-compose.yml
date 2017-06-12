@@ -86,7 +86,7 @@ services:
 # If you plan on running the daemon on the same machine, uncomment the section below
 ##
 #  daemon:
-#    image: quay.io/ccarney/pterodactyl-daemon:v0.4.0
+#    image: quay.io/ccarney/pterodactyl-daemon:v0.4.1
 #    depends_on:
 #    - panel
 #    ports:
