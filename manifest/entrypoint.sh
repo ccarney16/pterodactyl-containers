@@ -80,8 +80,8 @@ function updateConfiguration {
     --dbuser="${DB_USERNAME}" \
     --dbpass="${DB_PASSWORD}" \
     --driver="${CACHE_DRIVER}" \
-    --session-driver=database \
-    --queue-driver=database \
+    --session-driver="database" \
+    --queue-driver="database" \
     --timezone="${TIMEZONE}"
 
     php artisan pterodactyl:mail -n \
@@ -91,7 +91,7 @@ function updateConfiguration {
     --port="${MAIL_PORT}" \
     --username="${MAIL_USERNAME}" \
     --password="${MAIL_PASSWORD}" \
-    --from-name="${MAIL_FROM_NAME}"
+    --from-name="${MAIL_FROM}"
 
     php artisan migrate --force
 

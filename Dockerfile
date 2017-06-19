@@ -1,19 +1,16 @@
-FROM alpine:edge
+FROM alpine:3.6
 
 MAINTAINER Cameron Carney <ccarney16@live.com>
 
 ENV CONFIG_FILE=/data/pterodactyl.conf \
     STARTUP_TIMEOUT=15 \
     STORAGE_DIR=/data/storage \
-    PANEL_VERSION=v0.6.1
+    PANEL_VERSION=v0.6.2
 
 WORKDIR /var/www/html
 
 RUN \
- echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories \
- && echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories \
- && echo http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories \
- && apk update \
+ apk update \
  && apk add curl gettext nginx php7 php7 php7-bcmath php7-common php7-dom php7-fpm php7-gd \
  php7-memcached php7-mbstring php7-openssl php7-pdo php7-phar php7-json php7-pdo_mysql \ 
  php7-session php7-tokenizer php7-ctype php7-zlib php7-zip supervisor \
