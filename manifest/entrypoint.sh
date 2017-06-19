@@ -91,7 +91,7 @@ function updateConfiguration {
     --port="${MAIL_PORT}" \
     --username="${MAIL_USERNAME}" \
     --password="${MAIL_PASSWORD}" \
-    --from-name="${MAIL_FROM}"
+    --from-name="${MAIL_FROM_NAME}"
 
     php artisan migrate --force
 

@@ -42,8 +42,8 @@ __*Database Options*__
 
 __*Mailing Options*__
 * *MAIL_DRIVER*:
-* *MAIL_EMAIL*:
 * *MAIL_FROM*:
+* *MAIL_FROM_NAME*:
 
 
 __*Memcached Only Options*__
