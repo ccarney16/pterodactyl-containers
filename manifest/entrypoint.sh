@@ -112,15 +112,9 @@ function dbseed {
 init
 
 case "$1" in
-    p:down)
-        php artisan down
-        ;;
     p:start)
         initServer
         exec supervisord --nodaemon
-        ;;
-    p:up)
-        php artisan up
         ;;
     p:update)
         updateConfiguration
