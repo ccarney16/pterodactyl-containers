@@ -13,6 +13,7 @@ function init {
         cp ./storage.template ${STORAGE_DIR} -pr
     fi
 
+    # Remove symlink if it exists
     rm -rf ./storage
     ln -s ${STORAGE_DIR} ./storage
 
@@ -27,9 +28,12 @@ function init {
 
         php artisan optimize
         php artisan config:cache
-        php artisan key:generate --force
 
+        php artisan key:generate --force
         updateConfiguration
+
+        migrate
+        dbseed
     fi
 
     php artisan optimize
@@ -93,8 +97,13 @@ function updateConfiguration {
     --password="${MAIL_PASSWORD}" \
     --from-name="${MAIL_FROM_NAME}"
 
-    php artisan migrate --force
+}
 
+function migrate {
+    php artisan migrate --force
+}
+
+function dbseed {
     php artisan db:seed --force
 }
 
@@ -103,9 +112,15 @@ function updateConfiguration {
 init
 
 case "$1" in
+    p:down)
+        php artisan down
+        ;;
     p:start)
         initServer
         exec supervisord --nodaemon
+        ;;
+    p:up)
+        php artisan up
         ;;
     p:update)
         updateConfiguration
