@@ -33,7 +33,7 @@ services:
       - "MYSQL_PASSWORD=pterodbpass"
     volumes:
     - ./db:/var/lib/mysql
-    image: mariadb:10.0
+    image: mariadb:10.1
 
 ##
 # The main service.
@@ -73,7 +73,7 @@ services:
     - MAIL_DRIVER=mail
     - MAIL_FROM=admin@localhost
     - MAIL_FROM_NAME="Pterodactyl Panel"
-    image: quay.io/ccarney/pterodactyl-panel:v0.6.2
+    image: quay.io/ccarney/pterodactyl-panel:v0.6.3
     ports:
     - 80:80
     - 443:443
