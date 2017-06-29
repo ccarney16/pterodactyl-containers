@@ -20,7 +20,7 @@ Docker Compose:
 A _docker-compose.yml_ file is provided for anyone who uses docker compose.
 You can start the panel by running `docker-compose up -d`; You can edit variables using the environment section within _docker-compose.yml_.
 
-### The "/data" Volume ###
+### The _/data_ Volume ###
 
 The data volume for the image is used to maintain persistence:
 
@@ -32,7 +32,7 @@ It is recommend to create a directory mount for this, but isnt required.
 
 ### Updating ###
 
-Refer to https://docs.pterodactyl.io/ when updating to a newer version. `php artisan pterodactyl:env` and `php artisan pterodatyl:mail` is not required if you have the variables set outside of _/data/pterodactyl.conf_. 
+Refer to https://docs.pterodactyl.io/ when updating to a newer version. `php artisan pterodactyl:env` and `php artisan pterodatyl:mail` are not required if you have the variables set outside of _/data/pterodactyl.conf_. 
 
 ### Entrypoint Commands ###
 
@@ -40,7 +40,7 @@ Refer to https://docs.pterodactyl.io/ when updating to a newer version. `php art
 
 ### SSL Encryption ###
 
-SSL Encryption is an optional but recommended feature. Automatic SSL is provided by Let's Encrypt. When using the webroot feature in certbot (refer to docker-compose.yml), you should mount the .well-known directory created to `/var/www/html/public/.well-known` within the panel container.
+SSL Encryption is an optional but recommended feature. Automatic SSL within _docker-compose.yml_ is provided by Let's Encrypt. When using the webroot feature in certbot (refer to docker-compose.yml), you should mount the .well-known directory created to `/var/www/html/public/.well-known` within the panel container.
 
 ### Contributing ###
 
