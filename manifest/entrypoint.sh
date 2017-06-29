@@ -4,45 +4,58 @@
 # /entrypoint.sh - Manages the startup of pterodactyl panel
 ###
 
-set -e
-
 # Prep Container for usage
 function init {
-    # Create the storage directory
-    if [ ! -d ${STORAGE_DIR} ]; then
-        cp ./storage.template ${STORAGE_DIR} -pr
+    # Create the storage/cache directory
+    if [ ! -d /data/storage ]; then
+        cp -pr storage.tmpl /data/storage
     fi
 
-    # Remove symlink if it exists
-    rm -rf ./storage
-    ln -s ${STORAGE_DIR} ./storage
+    if [ ! -d /data/cache ]; then
+        mkdir -p /data/cache
+        chown -R nginx:nginx /data/cache
+    fi
 
-    # Always destroy .env symlink on startup
+    # destroy links and recreate them
+    rm -rf storage
+    ln -s /data/storage storage
+
+    rm -rf bootstrap/cache
+    ln -s /data/cache bootstrap/cache
+
     rm .env -rf
     ln -s "${CONFIG_FILE}" .env
 
-    if [ ! -e "${CONFIG_FILE}" ] || [ ! -s "${CONFIG_FILE}" ]; then
-        echo "Missing Configuration file, Creating..."
+    # Initial setup
+    if [ ! -e "${CONFIG_FILE}" ]; then
+        echo "Running first time setup..."
 
-        cp .env.example "${CONFIG_FILE}"
+        cp -pr .env.example ${CONFIG_FILE}
 
-        php artisan optimize
+        sleep 5
+
+        # Clean out everything
         php artisan config:cache
+        php artisan optimize
 
+        echo ""
+        echo "Generating key..."
+        sleep 1
         php artisan key:generate --force
-        updateConfiguration
 
-        migrate
-        dbseed
+        echo ""
+        echo "Creating & seeding database..."
+        sleep 1
+        php artisan migrate --force
+        php artisan db:seed --force
+
+        php artisan config:cache
+        php artisan optimize
     fi
-
-    php artisan optimize
-    php artisan config:cache
-
 }
 
 # Runs the initial configuration on every startup
-function initServer {
+function startServer {
     if [[ -z "${APP_URL}" ]]; then
         echo "Missing environment variable 'APP_URL'! Please resolve it now and start the container back up..."
         exit 1;
@@ -71,56 +84,19 @@ function initServer {
         envsubst '${DOMAIN_NAME}' \
         < /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
     fi
-}
 
-# Updates a configuration using variables from the .env file and shell variables
-function updateConfiguration {
-
-    php artisan pterodactyl:env -n \
-    --url="${APP_URL}" \
-    --dbhost="${DB_HOST}" \
-    --dbport="${DB_PORT}" \
-    --dbname="${DB_DATABASE}" \
-    --dbuser="${DB_USERNAME}" \
-    --dbpass="${DB_PASSWORD}" \
-    --driver="${CACHE_DRIVER}" \
-    --session-driver="database" \
-    --queue-driver="database" \
-    --timezone="${TIMEZONE}"
-
-    php artisan pterodactyl:mail -n \
-    --driver="${MAIL_DRIVER}" \
-    --email="${MAIL_FROM}" \
-    --host="${MAIL_HOST}" \
-    --port="${MAIL_PORT}" \
-    --username="${MAIL_USERNAME}" \
-    --password="${MAIL_PASSWORD}" \
-    --from-name="${MAIL_FROM_NAME}"
-
-}
-
-function migrate {
-    php artisan migrate --force
-}
-
-function dbseed {
-    php artisan db:seed --force
+    exec supervisord --nodaemon
 }
 
 ## Start ##
 
 init
 
-case "$1" in
+case "${1}" in
     p:start)
-        initServer
-        exec supervisord --nodaemon
-        ;;
-    p:update)
-        updateConfiguration
+        startServer
         ;;
     *)
-        echo -e "No internal command specified, executing as shell command...\n"
-        exec $@
+        exec ${@}
         ;;
 esac

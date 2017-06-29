@@ -1,6 +1,8 @@
 # Pterodactyl Panel Dockerfile #
 __A Free and Open Source Agnostic Game Panel__
 
+__Welcome to the Testing Branch, this branch is highly unstable and will change often.__
+
 https://github.com/ccarney16/pterodactyl-panel-dockerfile
 
 ### Usage ###

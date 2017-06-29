@@ -3,8 +3,7 @@ FROM alpine:3.6
 MAINTAINER Cameron Carney <ccarney16@live.com>
 
 ENV CONFIG_FILE=/data/pterodactyl.conf \
-    STARTUP_TIMEOUT=15 \
-    STORAGE_DIR=/data/storage \
+    STARTUP_TIMEOUT=5 \
     PANEL_VERSION=v0.6.3
 
 WORKDIR /var/www/html
@@ -23,7 +22,7 @@ RUN \
  && chmod -R 755 storage/* bootstrap/cache \
  && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
  && composer install --ansi --no-dev \
- && mv ./storage storage.template \
+ && mv ./storage storage.tmpl \
  && chown nginx:nginx * -R
 
 COPY ./manifest /

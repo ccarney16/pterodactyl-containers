@@ -73,7 +73,7 @@ services:
     - MAIL_DRIVER=mail
     - MAIL_FROM=admin@localhost
     - MAIL_FROM_NAME="Pterodactyl Panel"
-    image: quay.io/ccarney/pterodactyl-panel:v0.6.3
+    image: quay.io/ccarney/pterodactyl-panel:testing
     ports:
     - 80:80
     - 443:443
