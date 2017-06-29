@@ -1,0 +1,29 @@
+##
+# Optional Services, Recommended to rename to docker-compose.override.yml
+##
+
+version: '2'
+services:
+
+##
+# On initial setup, run "docker-compose run --rm certbot certonly --webroot -w /le-webroot 
+# -d <domain>" to recieve a certificate
+##
+  certbot:
+    command: renew
+    image: certbot/certbot:v1.13.0
+    volumes:
+    - ./certs:/etc/letsencrypt
+
+##
+# If you rely on another MySQL/MariaDB instance, this can be safely removed.
+# Make sure to remove the dependency from the panel
+##
+  mysql:
+    env_file: .env
+    volumes:
+    - ./db:/var/lib/mysql
+    image: mariadb:10.1
+  panel:
+    depends_on:
+    - mysql

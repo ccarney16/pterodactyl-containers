@@ -11,31 +11,6 @@ services:
     image: memcached:1.4-alpine
 
 ##
-# If you want to encrypt your connection, it is recommended to remove comments and add a cronjob.
-# On initial setup, run "docker-compose run --rm certbot certonly --webroot -w /le-webroot 
-# -d <domain>" to recieve a certificate
-##
-#  certbot:
-#    command: renew
-#    image: certbot/certbot:v1.13.0
-#    volumes:
-#    - ./certs:/etc/letsencrypt
-
-##
-# If you rely on another MySQL/MariaDB instance, this can be safely removed.
-# Make sure to remove the dependency from the panel
-##
-  mysql:
-    environment:
-      - "MYSQL_ROOT_PASSWORD=apassword"
-      - "MYSQL_DATABASE=pterodactyl"
-      - "MYSQL_USER=ptero"
-      - "MYSQL_PASSWORD=pterodbpass"
-    volumes:
-    - ./db:/var/lib/mysql
-    image: mariadb:10.1
-
-##
 # The main service.
 # Ensure that all variables/data is correct.
 ##
@@ -43,36 +18,7 @@ services:
     container_name: pterodactyl-panel
     depends_on:
     - cache
-    - mysql
-    environment:
-    # Please change this to something else or routing will not work correctly.
-    - APP_URL=http://localhost/
-
-    # SSL Encryption, useful if you dont run behind a reverse proxy
-    - SSL=false
-    - SSL_CERT=/certs/live/localhost/fullchain.pem
-    - SSL_CERT_KEY=/certs/live/localhost/privkey.pem
-
-    # Panel Variables, These are only needed when doing initial setup.
-    # When doing migration, the container will attempt to get the environment
-    # variables from the .env file.
-    - TIMEZONE=UTC
-
-    - CACHE_DRIVER=memcached
-
-    # Rely on an external source so we can put the panel container down when updates are needed
-    - MEMCACHED_HOST=cache
-    - MEMCACHED_PORT=11211
-
-    - DB_HOST=mysql
-    - DB_PORT=3306
-    - DB_DATABASE=pterodactyl
-    - DB_USERNAME=ptero
-    - DB_PASSWORD=pterodbpass
-
-    - MAIL_DRIVER=mail
-    - MAIL_FROM=admin@localhost
-    - MAIL_FROM_NAME="Pterodactyl Panel"
+    env_file: .env
     image: quay.io/ccarney/pterodactyl-panel:testing
     ports:
     - 80:80
