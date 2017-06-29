@@ -53,10 +53,15 @@ All issues regarding Pterodactyl Panel/Node are to be reported to https://github
 ### Useful Links ###
 
 *Pterodactyl Project*:
+
 https://pterodactyl.io/
+
 https://docs.pterodactyl.io/
+
 https://github.com/Pterodactyl/
 
 *Docker*:
+
 https://docs.docker.com/
+
 https://hub.docker.com/
