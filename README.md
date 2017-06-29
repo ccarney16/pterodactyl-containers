@@ -11,7 +11,7 @@ Copy .env.example as .env and run the setup under the commands provided:
 
 *Docker*:
 
-&nbsp;&nbsp;&nbsp;You can run the panel using this command: 
+You can run the panel using this command: 
 `docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:testing`.
 
 <sup>* This command alone does not provide the full environment for the panel. This is more or less a reference. If you wish to have a full environment, it is recommended to use the method below.</sup>
@@ -20,10 +20,10 @@ __or__
 
 *Docker Compose*:
 
-&nbsp;&nbsp;&nbsp;A *docker-compose.yml* file is provided for anyone who uses docker compose.
+A *docker-compose.yml* file is provided for anyone who uses docker compose.
 You can start the panel by running `docker-compose up -d`.
 
-&nbsp;&nbsp;&nbsp;*docker-compose.other.yml* provides mysql and the Let's Encrypt certbot services. If you want to use those services, you can symlink or copy it as *docker-compose.override.yml*. 
+*docker-compose.other.yml* provides mysql and the Let's Encrypt certbot services. If you want to use those services, you can symlink or copy it as *docker-compose.override.yml*. 
 
 ### The _/data_ Volume ###
 

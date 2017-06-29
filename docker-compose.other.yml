@@ -6,14 +6,14 @@ version: '2'
 services:
 
 ##
-# On initial setup, run "docker-compose run --rm certbot certonly --webroot -w /le-webroot 
+# On initial setup, run "docker-compose run --rm certbot certonly --webroot -w /ssl/.webroot
 # -d <domain>" to recieve a certificate
 ##
-  certbot:
-    command: renew
-    image: certbot/certbot:v1.13.0
-    volumes:
-    - ./certs:/etc/letsencrypt
+  # certbot:
+  #   command: renew
+  #   image: certbot/certbot:v1.13.0
+  #   volumes:
+  #   - ./ssl:/etc/letsencrypt
 
 ##
 # If you rely on another MySQL/MariaDB instance, this can be safely removed.
@@ -27,3 +27,6 @@ services:
   panel:
     depends_on:
     - mysql
+    volumes:
+    - ./ssl:/ssl
+    - ./ssl/.webroot/.well-known:/var/www/html/public/.well-known

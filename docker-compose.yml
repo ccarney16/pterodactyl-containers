@@ -27,8 +27,6 @@ services:
     volumes:
     - ./data:/data
 
-    # - ./certs:/certs
-
 ##
 # If you don't plan on running the daemon on the same machine, comment the section below.
 ##
