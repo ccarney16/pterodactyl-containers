@@ -7,63 +7,46 @@ https://github.com/ccarney16/pterodactyl-panel-dockerfile
 
 ### Usage ###
 
----
-
 Docker:
 
-It is recommended to create an environment file and run the following command:
-`docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:v0.6.3`
+You can run the panel using this command: `docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:testing`. 
+
+It is recommended to create a .env file for variables.
 
 __or__
 
 Docker Compose:
 
-Edit the environment section within docker-compose.yml then run `docker-compose up`
+A _docker-compose.yml_ file is provided for anyone who uses docker compose.
+You can start the panel by running `docker-compose up -d`; You can edit variables using the environment section within _docker-compose.yml_.
 
-Please refer to ENVIRIONMENT.md for more information regarding environment variables.
+### The "/data" Volume ###
 
-### Docker Compose ###
+The data volume for the image is used to maintain persistence:
 
----
+* _pterodactyl.conf_: The .env file for laravel, automatically generated if missing on startup. This is for any missing configuration variables. This can also be replaced by an existing panel installation.
+* _storage/_: Laravel storage, contains cache, logs, and files that need to be writable to the panel.
+* _cache/_: configuration cache for the panel.
 
-This repo provides a template docker-compose.yml file for easier deployment for the panel. It is highly recommended to use over straight up Docker.
+It is recommend to create a directory mount for this, but isnt required.
 
 ### Updating ###
 
----
-
-__Minor Revisions & Configuration Changes:__
-
-Docker:
-
-It is recommended to create a environment file and run the following command: `docker run --rm -v <root>:/data --env-file=./.env quay.io/ccarney/pterodactyl-panel:v0.6.3 p:update` Then restart the main container.
-
-Docker Compose:
-
-Edit the environment section within docker-compose.yml then run `docker-compose run --rm panel p:update`. Then restart the main container.
+Refer to https://docs.pterodactyl.io/ when updating to a newer version. `php artisan pterodactyl:env` and `php artisan pterodatyl:mail` is not required if you have the variables set outside of _/data/pterodactyl.conf_. 
 
 ### Entrypoint Commands ###
 
----
-
-* p:start - Starts the panel webserver and requirements (We don't provide Memcached!).
-* p:update - Updates the panel config using environment variables on runtime.
+* p:start - Starts the panel webserver and requirements (We don't provide cache and database!).
 
 ### SSL Encryption ###
-
----
 
 SSL Encryption is an optional but recommended feature. Automatic SSL is provided by Let's Encrypt. When using the webroot feature in certbot (refer to docker-compose.yml), you should mount the .well-known directory created to `/var/www/html/public/.well-known` within the panel container.
 
 ### Contributing ###
 
----
-
 All issues regarding Pterodactyl Panel/Node are to be reported to https://github.com/Pterodactyl/Panel/issues.
 
 ### Useful Links ###
-
----
 
 Pterodactyl Project:
 
