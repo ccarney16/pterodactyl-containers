@@ -25,6 +25,14 @@ function init {
 
     rm .env -rf
     ln -s "${CONFIG_FILE}" .env
+}
+
+# Runs the initial configuration on every startup
+function startServer {
+    if [[ -z "${APP_URL}" ]]; then
+        echo "Missing environment variable 'APP_URL'! Please resolve it now and start the container back up..."
+        exit 1;
+    fi
 
     # Initial setup
     if [ ! -e "${CONFIG_FILE}" ]; then
@@ -51,14 +59,6 @@ function init {
 
         php artisan config:cache
         php artisan optimize
-    fi
-}
-
-# Runs the initial configuration on every startup
-function startServer {
-    if [[ -z "${APP_URL}" ]]; then
-        echo "Missing environment variable 'APP_URL'! Please resolve it now and start the container back up..."
-        exit 1;
     fi
 
     if [[ "${STARTUP_TIMEOUT}" -gt "0" ]]; then
