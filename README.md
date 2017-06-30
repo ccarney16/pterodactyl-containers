@@ -41,7 +41,7 @@ Refer to https://docs.pterodactyl.io/ when updating to a newer version. `php art
 
 ### Migrating ###
 
-Refer to [https://docs.pterodactyl.io/](https://docs.pterodactyl.io/) for migrating. For users who are coming from a non dockerized setup, you can put it within the */data* volume and rename it as pterodactyl.conf. Once all set, start up the container environment.
+Refer to [https://docs.pterodactyl.io/](https://docs.pterodactyl.io/) for migrating. For users who are coming from a non dockerized setup, you can put your panel .env within the */data* volume and rename it as pterodactyl.conf. Once all set, start up the container environment.
 
 ### Entrypoint Commands ###
 
