@@ -6,7 +6,7 @@
 
 ----
 
-### Quick Start
+## Quick Start
 
 Copy .env.example as .env and run the setup under the commands provided:
 
@@ -26,7 +26,7 @@ You can start the panel by running `docker-compose up -d`.
 
 *docker-compose.other.yml* provides mysql and the Let's Encrypt certbot services. If you want to use those services, you can symlink or copy it as *docker-compose.override.yml*. 
 
-### The _/data_ Volume
+## The _/data_ Volume
 
 The data volume for the image is used to maintain persistence:
 
@@ -36,27 +36,27 @@ The data volume for the image is used to maintain persistence:
 
 ><sup>It is recommend to create a directory mount for this, but isnt required.</sup>
 
-### Updating
+## Updating
 
 Refer to https://docs.pterodactyl.io/ when updating to a newer version. `php artisan pterodactyl:env` and `php artisan pterodatyl:mail` are not required if you have the variables set outside of */data/pterodactyl.conf*.
 
-### Migrating
+## Migrating
 
 Refer to [https://docs.pterodactyl.io/](https://docs.pterodactyl.io/) for migrating. For users who are coming from a non dockerized setup, you can put your panel .env within the */data* volume and rename it as pterodactyl.conf. Once all set, start up the container environment.
 
-### Entrypoint Commands
+## Entrypoint Commands
 
 * p:start - Starts the panel web server and requirements (We don't provide cache and database!).
 
-### SSL Encryption
+## SSL Encryption
 
 SSL Encryption is an optional but recommended feature. Automatic SSL within *docker-compose.other.yml* is provided by Let's Encrypt. Refer to *docker-compose.other.yml* for more information.
 
-### Contributing
+## Contributing
 
 All issues regarding Pterodactyl Panel/Node are to be reported to https://github.com/Pterodactyl/Panel/issues.
 
-### Useful Links
+## Useful Links
 
 *Pterodactyl Project*:
 
