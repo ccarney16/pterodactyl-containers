@@ -26,23 +26,3 @@ services:
     restart: always
     volumes:
     - ./data:/data
-
-##
-# If you don't plan on running the daemon on the same machine, comment the section below.
-##
-  daemon:
-    image: quay.io/ccarney/pterodactyl-daemon:v0.4.2
-    depends_on:
-    - panel
-    ports:
-    -  8080:8080
-    restart: always
-    volumes:
-    - /srv/daemon/config:/srv/daemon/config
-    - /srv/daemon/packs:/srv/daemon/packs
-    - /srv/daemon/scripts:/srv/daemon/scripts
-    - /srv/daemon-data:/srv/daemon-data
-
-    - /tmp/pterodactyl:/tmp/pterodactyl
-
-    - /var/run/docker.sock:/var/run/docker.sock
