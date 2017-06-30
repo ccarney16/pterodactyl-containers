@@ -1,8 +1,10 @@
 
 
-# Pterodactyl Panel Dockerfile <sub><small>A FOSS and Agnostic Game Panel!</small></sub>
+# Pterodactyl Panel Dockerfile
 
 >**Welcome to the Testing Branch, this branch is highly unstable and will change often.**
+
+This is a docker image for pterodactyl panel, NOT the official panel repository!
 
 ## Quick Start
 
