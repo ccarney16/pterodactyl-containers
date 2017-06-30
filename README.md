@@ -4,8 +4,6 @@
 
 >**Welcome to the Testing Branch, this branch is highly unstable and will change often.**
 
-----
-
 ## Quick Start
 
 Copy .env.example as .env and run the setup under the commands provided:
@@ -17,9 +15,7 @@ You can run the panel using this command:
 
 ><sup>This command alone does not provide the full environment for the panel. This is more or less a reference. If you wish to have a full environment, it is recommended to use the method below.</sup>
 
-__or__
-
-*Docker Compose*:
+__or__ *Docker Compose*:
 
 A *docker-compose.yml* file is provided for anyone who uses docker compose.
 You can start the panel by running `docker-compose up -d`.
