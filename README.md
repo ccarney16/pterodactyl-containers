@@ -1,6 +1,6 @@
 
-# Pterodactyl Panel Dockerfile #
-**A Free and Open Source Agnostic Game Panel**
+
+# Pterodactyl Panel Dockerfile <sub><small>A Free and Open Source Agnostic Game Panel!</small></sub>
 
 >**Welcome to the Testing Branch, this branch is highly unstable and will change often.**
 
