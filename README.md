@@ -1,7 +1,8 @@
+
 # Pterodactyl Panel Dockerfile #
 **A Free and Open Source Agnostic Game Panel**
 
-**Welcome to the Testing Branch, this branch is highly unstable and will change often.**
+>**Welcome to the Testing Branch, this branch is highly unstable and will change often.**
 
 ----
 
@@ -14,7 +15,7 @@ Copy .env.example as .env and run the setup under the commands provided:
 You can run the panel using this command: 
 `docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:testing`.
 
-<sup>* This command alone does not provide the full environment for the panel. This is more or less a reference. If you wish to have a full environment, it is recommended to use the method below.</sup>
+><sup>* This command alone does not provide the full environment for the panel. This is more or less a reference. If you wish to have a full environment, it is recommended to use the method below.</sup>
 
 __or__
 
@@ -33,7 +34,7 @@ The data volume for the image is used to maintain persistence:
 * *storage/*: Laravel storage, contains cache, logs, and files that need to be writable to the panel.
 * *cache/*: configuration cache for the panel.
 
-It is recommend to create a directory mount for this, but isnt required.
+>It is recommend to create a directory mount for this, but isnt required.
 
 ### Updating ###
 
@@ -49,7 +50,7 @@ Refer to [https://docs.pterodactyl.io/](https://docs.pterodactyl.io/) for migrat
 
 ### SSL Encryption ###
 
-SSL Encryption is an optional but recommended feature. Automatic SSL within *docker-compose.yml* is provided by Let's Encrypt. When using the webroot feature in certbot (refer to docker-compose.yml), you should mount the .well-known directory created to `/var/www/html/public/.well-known` within the panel container.
+SSL Encryption is an optional but recommended feature. Automatic SSL within *docker-compose.other.yml* is provided by Let's Encrypt. Refer to *docker-compose.other.yml* for more information.
 
 ### Contributing ###
 
