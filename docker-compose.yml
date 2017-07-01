@@ -20,9 +20,6 @@ services:
     - cache
     env_file: .env
     image: quay.io/ccarney/pterodactyl-panel:v0.6.4
-    ports:
-    - 80:80
-    - 443:443
     restart: always
     volumes:
     - ./data:/data

@@ -29,7 +29,10 @@ services:
     volumes:
     - ./ssl:/ssl
     - ./ssl/.webroot/.well-known:/var/www/html/public/.well-known
-
+    ports:
+    - 80:80
+    - 443:443
+    
 ##
 # If you don't plan on running the daemon on the same machine, 
 # you may comment the section below.
