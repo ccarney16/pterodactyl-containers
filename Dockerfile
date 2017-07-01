@@ -4,7 +4,7 @@ MAINTAINER Cameron Carney <ccarney16@live.com>
 
 ENV CONFIG_FILE=/data/pterodactyl.conf \
     STARTUP_TIMEOUT=5 \
-    PANEL_VERSION=v0.6.3
+    PANEL_VERSION=v0.6.4
 
 WORKDIR /var/www/html
 

@@ -2,8 +2,6 @@
 
 # Pterodactyl Panel Dockerfile
 
->**Welcome to the Testing Branch, this branch is highly unstable and will change often.**
-
 This is a docker image for pterodactyl panel, NOT the official panel repository!
 
 ## Quick Start
@@ -13,7 +11,7 @@ Copy .env.example as .env and run the setup under the commands provided:
 *Docker*:
 
 You can run the panel using this command: 
-`docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:testing`.
+`docker run --name=pterodactyl-panel -p 80:80 -p 443:443 --env-file=./.env quay.io/ccarney/pterodactyl-panel:v0.6.4`.
 
 ><sup>This command alone does not provide the full environment for the panel. This is more or less a reference. If you wish to have a full environment, it is recommended to use the method below.</sup>
 
