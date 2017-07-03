@@ -9,6 +9,7 @@ services:
 ##
   cache:
     image: memcached:1.4-alpine
+    restart: always
 
 ##
 # The main service.
