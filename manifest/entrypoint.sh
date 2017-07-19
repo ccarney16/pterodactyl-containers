@@ -29,10 +29,6 @@ function init {
 
 # Runs the initial configuration on every startup
 function startServer {
-    if [[ -z "${APP_URL}" ]]; then
-        echo "Missing environment variable 'APP_URL'! Please resolve it now and start the container back up..."
-        exit 1;
-    fi
 
     # Initial setup
     if [ ! -e "${CONFIG_FILE}" ]; then
@@ -67,10 +63,6 @@ function startServer {
     else 
         echo "Starting Pterodactyl ${PANEL_VERSION}..."
     fi
-
-
-    # Since Nginx does not support URL's, lets just pull the domain out of the URL
-    export DOMAIN_NAME="$(echo $APP_URL | awk -F/ '{print $3}')"
 
     # Checks if we have SSL enabled or not, and updates the configuration to what is desired.
     if [ "${SSL}" == "true" ]; then

@@ -1,7 +1,6 @@
 server {
-    listen 80;
-    listen [::]:80;
-    server_name ${DOMAIN_NAME};
+    listen 80 default;
+    listen [::]:80 default;
     
     root /var/www/html/public;
     index index.php;

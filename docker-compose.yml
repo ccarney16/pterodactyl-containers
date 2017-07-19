@@ -5,22 +5,84 @@ version: '2'
 services:
 
 ##
+# Let's Encrypt Certbot
+# This service provides free SSL certificates that can 
+# be used to connect to the world. Uncomment if you 
+# are using the panel on its own (without a reverse
+# proxy). It is recommended to use the webroot
+# plugin. To get a certificate, run
+# "docker-compose run --rm certbot --webroot -w 
+# /etc/letsencrypt/.webroot -d {domain}" and follow
+# the instructions on screen. 
+##
+#  certbot:
+#  command: renew
+#  image: certbot/certbot:v1.13.0
+#  volumes:
+#  - ./letsencrypt:/etc/letsencrypt
+
+##
 # Panel Cache
+# This service is required for the panel to function.
+# You can use either redis or memcached, but memcached
+# is provided by default here.
 ##
   cache:
     image: memcached:1.4-alpine
     restart: always
 
 ##
-# The main service.
-# Ensure that all variables/data is correct.
+# MariaDB (MySQL) Server
+# If you rely on another MySQL/MariaDB instance, 
+# this can be safely removed. If you want to have 
+# your game servers be able to access this, be sure 
+# to declare your ports.
+##
+  mysql:
+    env_file: .env
+    volumes:
+    - ./db:/var/lib/mysql
+    image: mariadb:10.1
+
+##
+# Pterodactyl Panel
+# This is the main service that will be seen publically.
 ##
   panel:
     container_name: pterodactyl-panel
     depends_on:
     - cache
+    - mysql
     env_file: .env
     image: quay.io/ccarney/pterodactyl-panel:v0.6.4
     restart: always
     volumes:
     - ./data:/data
+    # Let's Encrypt webroot functionality
+    # - ./letsencrypt:/etc/letsencrypt
+    # - ./letsencrypt/.webroot/.well-known:/var/www/html/public
+    ports:
+    - 80:80
+    - 443:443
+
+##
+# Pterodactyl Daemon
+# If you don't plan on running the daemon on the same machine, 
+# you may comment the section below.
+##
+  daemon:
+    image: quay.io/ccarney/pterodactyl-daemon:v0.4.3
+    depends_on:
+    - panel
+    ports:
+    -  8080:8080
+    restart: always
+    volumes:
+    - /srv/daemon/config:/srv/daemon/config
+    - /srv/daemon/packs:/srv/daemon/packs
+    - /srv/daemon/scripts:/srv/daemon/scripts
+    - /srv/daemon-data:/srv/daemon-data
+
+    - /tmp/pterodactyl:/tmp/pterodactyl
+
+    - /var/run/docker.sock:/var/run/docker.sock
