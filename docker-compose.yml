@@ -17,7 +17,7 @@ services:
 ##
 #  certbot:
 #  command: renew
-#  image: certbot/certbot:v1.13.0
+#  image: certbot/certbot:v0.16.0
 #  volumes:
 #  - ./letsencrypt:/etc/letsencrypt
 
