@@ -6,9 +6,10 @@
 
 # Prep Container for usage
 function init {
-    # Create the storage/cache directory
+    # Create the storage/cache directories
     if [ ! -d /data/storage ]; then
         cp -pr storage.tmpl /data/storage
+        chown -R nginx:nginx /data/storage
     fi
 
     if [ ! -d /data/cache ]; then
@@ -16,7 +17,7 @@ function init {
         chown -R nginx:nginx /data/cache
     fi
 
-    # destroy links and recreate them
+    # destroy links (or files) and recreate them
     rm -rf storage
     ln -s /data/storage storage
 
@@ -68,13 +69,12 @@ function startServer {
     if [ "${SSL}" == "true" ]; then
         echo "Enabling SSL"
 
-        envsubst '${DOMAIN_NAME},${SSL_CERT},${SSL_CERT_KEY}' \
+        envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
         < /etc/nginx/templates/https.conf.tmpl > /etc/nginx/conf.d/default.conf
     else
         echo "Disabling SSL"
 
-        envsubst '${DOMAIN_NAME}' \
-        < /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
+        /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
     fi
 
     exec supervisord --nodaemon
