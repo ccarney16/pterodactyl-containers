@@ -74,7 +74,7 @@ function startServer {
     else
         echo "Disabling SSL"
 
-        /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
+        echo /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
     fi
 
     exec supervisord --nodaemon
