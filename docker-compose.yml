@@ -80,7 +80,6 @@ services:
     volumes:
     - /srv/daemon/config:/srv/daemon/config
     - /srv/daemon/packs:/srv/daemon/packs
-    - /srv/daemon/scripts:/srv/daemon/scripts
     - /srv/daemon-data:/srv/daemon-data
 
     - /tmp/pterodactyl:/tmp/pterodactyl
