@@ -32,10 +32,19 @@ function init {
 function startServer {
 
     # Initial setup
-    if [ ! -e "${CONFIG_FILE}" ]; then
+    if [ ! -e "/data/pterodactyl.conf" ]; then
         echo "Running first time setup..."
 
-        cp -pr .env.example ${CONFIG_FILE}
+        touch /data/pterodactyl.conf
+        echo "##" > /data/pterodactyl.conf
+        echo "# Generated on:" $(date +"%B %d %Y, %H:%M:%S") >> /data/pterodactyl.conf
+        echo "# This file was generated on first start and contains " >> /data/pterodactyl.conf
+        echo "# the key for sensitive information. All panel configuration " >> /data/pterodactyl.conf
+        echo "# can be done here using the normal method (NGINX not included!)," >> /data/pterodactyl.conf
+        echo "# or using Docker's environment variables parameter." >> /data/pterodactyl.conf
+        echo "##" >> /data/pterodactyl.conf
+        echo "" >> /data/pterodactyl.conf
+        echo "APP_KEY=SomeRandomString3232RandomString" >> /data/pterodactyl.conf
 
         sleep 5
 
