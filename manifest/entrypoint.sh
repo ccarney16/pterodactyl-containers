@@ -25,7 +25,7 @@ function init {
     ln -s /data/cache bootstrap/cache
 
     rm .env -rf
-    ln -s "${CONFIG_FILE}" .env
+    ln -s "/data/pterodactyl.conf" .env
 }
 
 # Runs the initial configuration on every startup
