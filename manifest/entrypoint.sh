@@ -24,8 +24,8 @@ function init {
     rm -rf bootstrap/cache
     ln -s /data/cache bootstrap/cache
 
-    rm .env -rf
-    ln -s "/data/pterodactyl.conf" .env
+    rm -rf .env
+    ln -s /data/pterodactyl.conf .env
 }
 
 # Runs the initial configuration on every startup
@@ -35,6 +35,7 @@ function startServer {
     if [ ! -e "/data/pterodactyl.conf" ]; then
         echo "Running first time setup..."
 
+        # Generate base template
         touch /data/pterodactyl.conf
         echo "##" > /data/pterodactyl.conf
         echo "# Generated on:" $(date +"%B %d %Y, %H:%M:%S") >> /data/pterodactyl.conf
@@ -49,8 +50,8 @@ function startServer {
         sleep 5
 
         # Clean out everything
-        php artisan config:cache
-        php artisan optimize
+        php artisan config:cache -q
+        php artisan optimize -q
 
         echo ""
         echo "Generating key..."
@@ -62,11 +63,13 @@ function startServer {
         sleep 1
         php artisan migrate --force
         php artisan db:seed --force
-
-        php artisan config:cache
-        php artisan optimize
     fi
 
+    # Clear config cache and optimize on every startup
+    php artisan config:cache -q
+    php artisan optimize -q
+
+    # Allows Users to give MySQL/cache sometime to start up.
     if [[ "${STARTUP_TIMEOUT}" -gt "0" ]]; then
         echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
         sleep ${STARTUP_TIMEOUT}
