@@ -71,7 +71,7 @@ services:
 # you may comment the section below.
 ##
   daemon:
-    image: quay.io/ccarney/pterodactyl-daemon:v0.4.3
+    image: quay.io/ccarney/pterodactyl-daemon:v0.4.4
     depends_on:
     - panel
     ports:
