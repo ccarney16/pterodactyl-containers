@@ -54,7 +54,7 @@ services:
     - cache
     - mysql
     env_file: .env
-    image: quay.io/ccarney/pterodactyl-panel:v0.6.4
+    image: quay.io/ccarney/pterodactyl-panel:v0.7.0-beta
     restart: always
     volumes:
     - ./data:/data

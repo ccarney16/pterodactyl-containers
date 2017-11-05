@@ -12,17 +12,9 @@ function init {
         chown -R nginx:nginx /data/storage
     fi
 
-    if [ ! -d /data/cache ]; then
-        mkdir -p /data/cache
-        chown -R nginx:nginx /data/cache
-    fi
-
     # destroy links (or files) and recreate them
     rm -rf storage
     ln -s /data/storage storage
-
-    rm -rf bootstrap/cache
-    ln -s /data/cache bootstrap/cache
 
     rm -rf .env
     ln -s /data/pterodactyl.conf .env
