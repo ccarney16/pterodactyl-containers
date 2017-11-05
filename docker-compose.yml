@@ -40,9 +40,10 @@ services:
 ##
   mysql:
     env_file: .env
+    image: mariadb:10.1
+    restart: always
     volumes:
     - ./db:/var/lib/mysql
-    image: mariadb:10.1
 
 ##
 # Pterodactyl Panel
@@ -71,9 +72,10 @@ services:
 # you may comment the section below.
 ##
   daemon:
-    image: quay.io/ccarney/pterodactyl-daemon:v0.4.4
+    container_name: pterodactyl-daemon
     depends_on:
     - panel
+    image: quay.io/ccarney/pterodactyl-daemon:v0.5.0-beta
     ports:
     -  8080:8080
     restart: always
