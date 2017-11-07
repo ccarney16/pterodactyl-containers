@@ -19,9 +19,10 @@ RUN \
  && tar --strip-components=1 -xzvf ${PANEL_VERSION}.tar.gz \
  && rm "${PANEL_VERSION}.tar.gz" \
  && chmod -R 755 storage/* bootstrap/cache \
+ && find storage -type d > .storage.tmpl \
  && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
  && composer install --ansi --no-dev \
- && mv ./storage storage.tmpl \
+ && rm ./storage -rf \
  && chown nginx:nginx * -R
 
 COPY ./manifest /

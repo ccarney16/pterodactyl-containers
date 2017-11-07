@@ -8,7 +8,10 @@
 function init {
     # Create the storage/cache directories
     if [ ! -d /data/storage ]; then
-        cp -pr storage.tmpl /data/storage
+        mkdir -p /data/storage
+        cat .storage.tmpl | while read line; do
+            mkdir -p "/data/${line}"
+        done
         chown -R nginx:nginx /data/storage
     fi
 
