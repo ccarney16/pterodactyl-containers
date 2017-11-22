@@ -3,7 +3,7 @@ FROM alpine:3.6
 MAINTAINER Cameron Carney <ccarney16@live.com>
 
 ENV STARTUP_TIMEOUT=5 \
-    PANEL_VERSION=v0.7.0-beta.1
+    PANEL_VERSION=v0.7.0-beta.2
 
 WORKDIR /var/www/html
 

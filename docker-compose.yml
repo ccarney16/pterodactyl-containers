@@ -5,31 +5,16 @@ version: '2'
 services:
 
 ##
-# Let's Encrypt Certbot
-# This service provides free SSL certificates that can 
-# be used to connect to the world. Uncomment if you 
-# are using the panel on its own (without a reverse
-# proxy). It is recommended to use the webroot
-# plugin. To get a certificate, run
-# "docker-compose run --rm certbot --webroot -w 
-# /etc/letsencrypt/.webroot -d {domain}" and follow
-# the instructions on screen. 
+# Certbot (Let's Encrypt)
+# This service provides automatic SSL for the panel.
+# when in doubt, use it. Please check certbot's documentation
+# for use in a container.
 ##
-#  certbot:
-#  command: renew
-#  image: certbot/certbot:v0.16.0
-#  volumes:
-#  - ./letsencrypt:/etc/letsencrypt
-
-##
-# Panel Cache
-# This service is required for the panel to function.
-# You can use either redis or memcached, but memcached
-# is provided by default here.
-##
-  cache:
-    image: memcached:1.4-alpine
-    restart: always
+  certbot:
+    command: renew
+    image: certbot/certbot
+    volumes:
+    - ./letsencrypt:/etc/letsencrypt
 
 ##
 # MariaDB (MySQL) Server
@@ -43,7 +28,18 @@ services:
     image: mariadb:10.1
     restart: always
     volumes:
-    - ./db:/var/lib/mysql
+    - ./mysql_db:/var/lib/mysql
+
+##
+# Panel Cache
+# This service is required for the panel to function.
+# You can use either redis or memcached, but redis
+# is provided by default here.
+##
+  cache:
+    container_name: pterodactyl-cache
+    image: redis:alpine
+    restart: always
 
 ##
 # Pterodactyl Panel
@@ -59,6 +55,7 @@ services:
     restart: always
     volumes:
     - ./data:/data
+
     # Let's Encrypt webroot functionality
     # - ./letsencrypt:/etc/letsencrypt
     # - ./letsencrypt/.webroot/.well-known:/var/www/html/public
@@ -78,6 +75,7 @@ services:
     image: quay.io/ccarney/pterodactyl-daemon:v0.5.0-beta
     ports:
     -  8080:8080
+    privileged: true
     restart: always
     volumes:
     - /srv/daemon/config:/srv/daemon/config
@@ -86,4 +84,5 @@ services:
 
     - /tmp/pterodactyl:/tmp/pterodactyl
 
+    # Docker socket, this is required to function properly.
     - /var/run/docker.sock:/var/run/docker.sock
