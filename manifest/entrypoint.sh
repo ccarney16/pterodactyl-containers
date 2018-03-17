@@ -72,18 +72,6 @@ function startServer {
         echo "Starting Pterodactyl ${PANEL_VERSION}..."
     fi
 
-    # Checks if we have SSL enabled or not, and updates the configuration to what is desired.
-    if [ "${SSL}" == "true" ]; then
-        echo "Enabling SSL"
-
-        envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
-        < /etc/nginx/templates/https.conf.tmpl > /etc/nginx/conf.d/default.conf
-    else
-        echo "Disabling SSL"
-
-        cat /etc/nginx/templates/http.conf.tmpl > /etc/nginx/conf.d/default.conf
-    fi
-
     exec supervisord --nodaemon
 }
 

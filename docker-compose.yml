@@ -3,19 +3,6 @@
 ##
 version: '2'
 services:
-
-##
-# Certbot (Let's Encrypt)
-# This service provides automatic SSL for the panel.
-# when in doubt, use it. Please check certbot's documentation
-# for use in a container.
-##
-  certbot:
-    command: renew
-    image: certbot/certbot
-    volumes:
-    - ./letsencrypt:/etc/letsencrypt
-
 ##
 # MariaDB (MySQL) Server
 # If you rely on another MySQL/MariaDB instance, 
@@ -25,7 +12,7 @@ services:
 ##
   mysql:
     env_file: .env
-    image: mariadb:10.1
+    image: mariadb:10.2
     restart: always
     volumes:
     - ./mysql_db:/var/lib/mysql
@@ -55,10 +42,6 @@ services:
     restart: always
     volumes:
     - ./data:/data
-
-    # Let's Encrypt webroot functionality
-    # - ./letsencrypt:/etc/letsencrypt
-    # - ./letsencrypt/.webroot/.well-known:/var/www/html/public
     ports:
     - 80:80
     - 443:443

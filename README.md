@@ -42,7 +42,7 @@ Refer to [https://docs.pterodactyl.io/](https://docs.pterodactyl.io/) for migrat
 
 ## SSL Encryption
 
-SSL Encryption is an optional but recommended feature. Automatic SSL within *docker-compose.yml* is provided by Let's Encrypt. Refer to *docker-compose.yml* for more information.
+This version of my container no longer uses SSL, It is recommended to use a proxy such as nginx to enable SSL. 
 
 ## Contributing
 
