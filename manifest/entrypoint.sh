@@ -15,9 +15,17 @@ function init {
         chown -R nginx:nginx /data/storage
     fi
 
+    if [ ! -d /data/cache ]; then
+        mkdir -p /data/cache
+        chown -R nginx:nginx /data/cache
+    fi
+
     # destroy links (or files) and recreate them
     rm -rf storage
     ln -s /data/storage storage
+
+    rm -rf bootstrap/cache
+    ln -s /data/cache bootstrap/cache
 
     rm -rf .env
     ln -s /data/pterodactyl.conf .env
@@ -27,7 +35,7 @@ function init {
 function startServer {
 
     # Initial setup
-    if [ ! -e "/data/pterodactyl.conf" ]; then
+    if [ ! -e /data/pterodactyl.conf ]; then
         echo "Running first time setup..."
 
         # Generate base template
@@ -56,16 +64,34 @@ function startServer {
         php artisan db:seed --force
     fi
 
-    rm -rf /var/run/supervisor.d/
-    mkdir /var/run/supervisor.d/
-    cp /etc/supervisor.d/service-files/* /var/run/supervisor.d/
-
     # Allows Users to give MySQL/cache sometime to start up.
     if [[ "${STARTUP_TIMEOUT}" -gt "0" ]]; then
         echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
         sleep ${STARTUP_TIMEOUT}
     else 
         echo "Starting Pterodactyl ${PANEL_VERSION}..."
+    fi
+
+    if [ "${SSL}" == "true" ]; then
+        envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
+        < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
+    else
+        echo "[Warning] Disabling HTTPS"
+        cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
+    fi
+
+    # Copy service files to runtime files
+    rm -rf /var/run/supervisor.d/
+    mkdir /var/run/supervisor.d/
+
+    # Determine if workers should be enabled or not
+    if [ "${DISABLE_WORKERS}" != "true" ]; then
+        cp /etc/supervisor.d/runtime-files/* /var/run/supervisor.d/
+    else 
+        echo "[Warning] Disabling Workers (pteroq & cron); It is recommended to keep these enabled unless you know what you are doing."
+        cp /etc/supervisor.d/runtime-files/nginx.ini \
+        /etc/supervisor.d/runtime-files/php-fpm.ini \
+        /var/run/supervisor.d/
     fi
 
     exec supervisord --nodaemon
