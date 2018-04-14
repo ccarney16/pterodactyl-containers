@@ -56,6 +56,10 @@ function startServer {
         php artisan db:seed --force
     fi
 
+    rm -rf /var/run/supervisor.d/
+    mkdir /var/run/supervisor.d/
+    cp /etc/supervisor.d/service-files/* /var/run/supervisor.d/
+
     # Allows Users to give MySQL/cache sometime to start up.
     if [[ "${STARTUP_TIMEOUT}" -gt "0" ]]; then
         echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
