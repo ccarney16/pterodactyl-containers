@@ -25,7 +25,7 @@ RUN \
  && rm .env ./storage -rf \
  && chown nginx:nginx * -R
 
-COPY ./manifest /
+COPY ./ /
 
 VOLUME [ "/data" ]
 

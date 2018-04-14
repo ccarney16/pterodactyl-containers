@@ -33,6 +33,9 @@ services:
 # This is the main service that will be seen publically.
 ##
   panel:
+    build:
+      context: ./manifest/panel
+      dockerfile: Dockerfile
     container_name: pterodactyl-panel
     depends_on:
     - cache
@@ -52,6 +55,9 @@ services:
 # you may comment the section below.
 ##
   daemon:
+    build:
+      context: ./manifest/daemon
+      dockerfile: Dockerfile
     container_name: pterodactyl-daemon
     depends_on:
     - panel
