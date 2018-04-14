@@ -44,10 +44,6 @@ function startServer {
 
         sleep 5
 
-        # Clean out everything
-        php artisan config:cache -q
-        php artisan optimize -q
-
         echo ""
         echo "Generating key..."
         sleep 1
@@ -59,10 +55,6 @@ function startServer {
         php artisan migrate --force
         php artisan db:seed --force
     fi
-
-    # Clear config cache and optimize on every startup
-    php artisan config:cache -q
-    php artisan optimize -q
 
     # Allows Users to give MySQL/cache sometime to start up.
     if [[ "${STARTUP_TIMEOUT}" -gt "0" ]]; then
