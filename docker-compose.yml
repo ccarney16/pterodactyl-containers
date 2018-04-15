@@ -15,16 +15,31 @@ services:
     image: mariadb:10.2
     restart: always
     volumes:
-    - ./mysql_db:/var/lib/mysql
+    - ./db:/var/lib/mysql
 
 ##
+# Let's Encrypt Certbot
+# This service provides free SSL certificates that can 
+# be used to connect to the world. Uncomment if you 
+# are using the panel on its own (without a reverse
+# proxy). It is recommended to use the webroot
+# plugin. To get a certificate, run
+# "docker-compose run --rm certbot --webroot -w 
+# /etc/letsencrypt/webroot -d {domain}" and follow
+# the instructions on screen. 
+##
+#  certbot:
+#    command: renew
+#    image: certbot
+#    volumes:
+#    - ./letsencrypt:/etc/letsencrypt
+
 # Panel Cache
 # This service is required for the panel to function.
 # You can use either redis or memcached, but redis
 # is provided by default here.
 ##
   cache:
-    container_name: pterodactyl-cache
     image: redis:alpine
     restart: always
 
@@ -36,7 +51,6 @@ services:
     build:
       context: ./manifest/panel
       dockerfile: Dockerfile
-    container_name: pterodactyl-panel
     depends_on:
     - cache
     - mysql
@@ -45,6 +59,10 @@ services:
     restart: always
     volumes:
     - ./data:/data
+
+    # If you are using the certbot container, uncomment the following volumes
+    # - ./letsencrypt:/etc/letsencrypt
+    # - ./letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
     ports:
     - 80:80
     - 443:443
@@ -58,7 +76,6 @@ services:
     build:
       context: ./manifest/daemon
       dockerfile: Dockerfile
-    container_name: pterodactyl-daemon
     depends_on:
     - panel
     image: quay.io/ccarney/pterodactyl-daemon:v0.5.0-beta
