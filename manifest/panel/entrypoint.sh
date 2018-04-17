@@ -55,7 +55,7 @@ function startServer {
         echo ""
         echo "Generating key..."
         sleep 1
-        php artisan key:generate --force
+        php artisan key:generate --force --no-interaction
 
         echo ""
         echo "Creating & seeding database..."
