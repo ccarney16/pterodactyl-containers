@@ -94,7 +94,7 @@ function startServer {
         /var/run/supervisor.d/
     fi
 
-    exec supervisord --nodaemon
+    exec supervisord --nodaemon -c /etc/supervisord.conf
 }
 
 ## Start ##
