@@ -10,26 +10,30 @@ Clone/Download the repository to your local storage.
 
 Rename the provided `.env.example` as `.env`
 
-<!-- Clone/download the repo, then copy the .env.example as .env within the same directory.
-The .env file contains all the variables to the containers functions including the panel.
 
-<p>If you are migrating from a panel that was not in a container, go down to <i>Migrating</i> for more information.</p>
-
-Once that process is done, run `docker-compose pull` to pull the required container images down.
+Edit variables to fit your need, such as database password and URL.
 
 
-In order for the panel to set up the database, mysql needs to be started first: `docker-compose up -d mysql`.
+Run `docker-compose pull` to pull down the images. After `docker-compose up -d mysql` to start up mysql (Be sure to wait roughly 10-30 seconds to ensure that the database starts up).
 
 
-After 5-10 seconds, issue this to start the panel: `docker-compose up -d panel`. The panel should be up and running, verify that it is accepting connections.
+When the base is set up, then run `docker-compose up -d panel`. This may take anywhere from 30 seconds to a few minutes when the panel starts up.
 
 
-You will need a username and password to login: `docker-compose run --rm panel php artisan p:user:make`
+To create a user account, run `docker-compose run --rm panel php artisan p:user:make`
 
 
-`docker-compose run --rm daemon <token>`
+Now login to the panel using the given URL provided in .env and set up the daemon.
 
-`docker-compose up -d` -->
+
+Copy the configuration to `/srv/daemon/config/core.json`. It is recommended to change the network parameters or the daemon may crash (If you have not used pterodactyl before, it will attempt to use the 172.18.0.0/16 block). In json notation, you should modify `docker.network.interfaces.v4.subnet` and `docker.network.interfaces.v4.gateway`.
+
+
+Run `docker-compose up -d daemon` to complete setting up.
+
+
+If you have any problems, refer to `docker-compose logs` to identify any issues.
+You should be all set and rocking!
 
 ## Updating
 
@@ -47,4 +51,4 @@ Set `SSL` to true in `.env` and provide SSL certificates. Let's Encrypt is also 
 
 ## Workers/cron in seperate container
 
-While this container is able to run both the cron daemon and pterodactyl workers required for the panel to function correctly, they can be disabled in favor of running them in another container. Just set `DISABLE_WORKERS` to true and use the provided example in `docker-compose.extra.yml`.
+While this container is able to run both the cron daemon and pterodactyl workers required for the panel to function correctly, they can be disabled in favor of running them in another container. Just set `DISABLE_WORKERS` to true and use the provided examples for seperate workers in `docker-compose.extra.yml`.
