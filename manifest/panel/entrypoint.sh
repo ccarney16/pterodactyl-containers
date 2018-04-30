@@ -80,21 +80,17 @@ function startServer {
         cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
     fi
 
-    # Copy service files to runtime files
-    rm -rf /var/run/supervisor.d/
-    mkdir /var/run/supervisor.d/
-
     # Determine if workers should be enabled or not
     if [ "${DISABLE_WORKERS}" != "true" ]; then
-        cp /etc/supervisor.d/runtime-files/* /var/run/supervisor.d/
+        /usr/sbin/crond -f -l 0 &
+        php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3 &
     else 
         echo "[Warning] Disabling Workers (pteroq & cron); It is recommended to keep these enabled unless you know what you are doing."
-        cp /etc/supervisor.d/runtime-files/nginx.ini \
-        /etc/supervisor.d/runtime-files/php-fpm.ini \
-        /var/run/supervisor.d/
     fi
 
-    exec supervisord --nodaemon -c /etc/supervisord.conf
+    /usr/sbin/php-fpm7 --nodaemonize -c /etc/php7 &
+
+    exec /usr/sbin/nginx -g "daemon off;"
 }
 
 ## Start ##
