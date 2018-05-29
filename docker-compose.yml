@@ -38,7 +38,7 @@ services:
     - cache
     - mysql
     env_file: .env
-    image: ccarney16/pterodactyl-panel:v0.7.6
+    image: ccarney16/pterodactyl-panel:v0.7.7
     restart: always
     volumes:
     - ./data:/data
@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
     - panel
-    image: ccarney16/pterodactyl-daemon:v0.5.5
+    image: ccarney16/pterodactyl-daemon:v0.5.6
     ports:
     -  8080:8080
     privileged: true

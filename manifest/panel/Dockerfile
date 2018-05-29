@@ -3,7 +3,7 @@ FROM alpine:edge
 MAINTAINER Cameron Carney <ccarney16@live.com>
 
 ENV STARTUP_TIMEOUT=5 \
-    PANEL_VERSION=v0.7.6
+    PANEL_VERSION=v0.7.7
 
 WORKDIR /var/www/html
 
