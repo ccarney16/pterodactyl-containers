@@ -42,3 +42,10 @@
 #   restart: always
 #   volumes_from:
 #   - panel
+sftp:
+  build:
+    context: ./manifest/sftp
+  image: ccarney16/pterodactyl-sftp:v1.0.1
+  restart: always
+  volumes_from:
+  - daemon
