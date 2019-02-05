@@ -12,39 +12,38 @@
 # run --rm certbot --webroot -w /etc/letsencrypt/webroot -d {domain}" and follow
 # the instructions on screen. 
 ##
-# certbot:
-#   command: renew
-#   image: certbot
-#   volumes:
-#   - ./letsencrypt:/etc/letsencrypt
+certbot:
+  command: renew
+  image: certbot/certbot
+  volumes:
+  - ./letsencrypt:/etc/letsencrypt
 # If you are using the certbot container, apply this to the panel container
-# panel:
-#   volumes:
-#   - ./letsencrypt:/etc/letsencrypt
-#   - ./letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
+panel:
+  volumes:
+  - ./letsencrypt:/etc/letsencrypt
+  - ./letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
 
 ##
 # Seperate Worker Container
 # If you plan on using another container for handling all the workers and cronjobs, 
 # use these services and set DISABLE_WORKERS=true for the panel container
 ##
-# worker:
-#   command: php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3
-#   env_file: .env
-#   image: quay.io/ccarney/pterodactyl-panel:latest
-#   restart: always
-#   volumes_from:
-#   - panel
-# cron:
-#   command: /usr/sbin/crond -f -l 0
-#   env_file: .env
-#   image: quay.io/ccarney/pterodactyl-panel:latest
-#   restart: always
-#   volumes_from:
-#   - panel
+worker:
+  command: php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3
+  env_file: .env
+  image: quay.io/ccarney/pterodactyl-panel:latest
+  restart: always
+  volumes_from:
+  - panel
+cron:
+  command: /usr/sbin/crond -f -l 0
+  env_file: .env
+  image: quay.io/ccarney/pterodactyl-panel:latest
+  restart: always
+  volumes_from:
+  - panel
+
 sftp:
-  build:
-    context: ./manifest/sftp
   image: ccarney16/pterodactyl-sftp:v1.0.1
   restart: always
   volumes_from:

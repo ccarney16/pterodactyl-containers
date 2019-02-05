@@ -2,7 +2,9 @@ FROM node:8-alpine
 
 MAINTAINER Cameron Carney <ccarney16@live.com>
 
-ENV DAEMON_VERSION=v0.6.8 \
+ARG VERSION
+
+ENV DAEMON_VERSION=${VERSION} \
     UID=500
 
 WORKDIR /srv/daemon

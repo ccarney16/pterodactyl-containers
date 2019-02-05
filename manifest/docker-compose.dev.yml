@@ -1,0 +1,23 @@
+# Build services for dockerizing
+version: '2.1'
+services:
+  panel:
+    build:
+      args:
+        VERSION: ${PANEL_VERSION}
+      context: ./manifest/panel
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
+  daemon:
+    build:
+      args:
+        VERSION: ${DAEMON_VERSION}
+      context: ./manifest/daemon
+    image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION}
+  sftp:
+    build:
+      args:
+        VERSION: ${SFTP_VERSION}
+      context: ./manifest/sftp
+    image: ccarney16/pterodactyl-sftp:${SFTP_VERSION}
+    volumes_from:
+    - daemon

@@ -1,7 +1,7 @@
 ##
 # Pterodactyl Panel Docker Setup by ccarney
 ##
-version: '2'
+version: '2.1'
 services:
 ##
 # MariaDB (MySQL) Server
@@ -31,14 +31,11 @@ services:
 # This is the main service that will be seen publically.
 ##
   panel:
-    build:
-      context: ./manifest/panel
-      dockerfile: Dockerfile
     depends_on:
     - cache
     - mysql
     env_file: .env
-    image: ccarney16/pterodactyl-panel:v0.7.11
+    image: ccarney16/pterodactyl-panel:latest
     restart: always
     volumes:
     - ./data:/data
@@ -52,12 +49,9 @@ services:
 # you may comment/delete the section below.
 ##
   daemon:
-    build:
-      context: ./manifest/daemon
-      dockerfile: Dockerfile
     depends_on:
     - panel
-    image: ccarney16/pterodactyl-daemon:v0.6.8
+    image: ccarney16/pterodactyl-daemon:latest
     ports:
     -  8080:8080
     privileged: true
@@ -71,5 +65,5 @@ services:
 
     # Docker socket and directory, needed to communicate to docker
     # NOTE: If you are using docker in a different directory, please change below to reflect that!
-    - /var/lib/docker:/var/lib/docker
-    - /var/run/docker.sock:/var/run/docker.sock
+    - ${DOCKER_ROOT:-/var/lib/docker}:${DOCKER_ROOT:-/var/lib/docker}
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:${DOCKER_SOCKET:-/var/run/docker.sock}
