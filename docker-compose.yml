@@ -63,6 +63,8 @@ services:
 
     - /tmp/pterodactyl:/tmp/pterodactyl
 
+    - /etc/localtime:/etc/localtime
+
     # Docker socket and directory, needed to communicate to docker
     # NOTE: If you are using docker in a different directory, please change below to reflect that!
     - ${DOCKER_ROOT:-/var/lib/docker}:${DOCKER_ROOT:-/var/lib/docker}
