@@ -66,10 +66,11 @@ function startServer {
     fi
 
 
-    # is mobile app enalbed
+    # CHecking is mobile app enalbed
     if [ "${MOBILE_APP}" == "true" ]; then
        echo "[INFO] Mobile app is enabled"
 
+        # This is a empty file and was only created for first time setup and not running every time
         if [ ! -e /data/pterodactyl-mobile.conf ]; then
             echo "Running first time mobile app setup..."
 
