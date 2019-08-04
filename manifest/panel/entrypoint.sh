@@ -31,7 +31,8 @@ function init {
     ln -s /data/pterodactyl.conf .env
 }
 
-# Runs the initial configuration on every startup
+# Runs the 
+ial configuration on every startup
 function startServer {
 
     # Initial setup
@@ -62,6 +63,26 @@ function startServer {
         sleep 1
         php artisan migrate --force
         php artisan db:seed --force
+    fi
+
+
+    # is mobile app enalbed
+    if [ "${MOBILE_APP}" == "true" ]; then
+       echo "[INFO] Mobile app is enabled"
+
+        if [ ! -e /data/pterodactyl-mobile.conf ]; then
+            echo "Running first time mobile app setup..."
+
+            # Generate base template
+            touch /data/pterodactyl-mobile.conf
+
+            # Setup mobile app
+            composer config repositories.cloud composer https://packages.pterodactyl.cloud
+            composer require pterodactyl/mobile-addon --update-no-dev --optimize-autoloader
+            php artisan migrate
+        fi
+    else
+        echo "[INFO] Mobile app is disabled"
     fi
 
     # Allows Users to give MySQL/cache sometime to start up.
