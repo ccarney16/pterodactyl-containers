@@ -52,3 +52,6 @@ Set `SSL` to true in `.env` and provide SSL certificates. Let's Encrypt is also 
 ## Workers/cron in seperate container
 
 While this container is able to run both the cron daemon and pterodactyl workers required for the panel to function correctly, they can be disabled in favor of running them in another container. Just set `DISABLE_WORKERS` to true and use the provided examples for seperate workers in `docker-compose.extra.yml`.
+
+## Enabling Mobile App
+Set `MOBILE_APP` to true in `.env`
