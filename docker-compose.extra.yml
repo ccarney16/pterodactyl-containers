@@ -46,5 +46,6 @@ cron:
 sftp:
   image: ccarney16/pterodactyl-sftp:v1.0.1
   restart: always
+  ports: [2022:2022]
   volumes_from:
   - daemon
