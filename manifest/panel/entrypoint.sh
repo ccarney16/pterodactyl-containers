@@ -31,8 +31,7 @@ function init {
     ln -s /data/pterodactyl.conf .env
 }
 
-# Runs the 
-ial configuration on every startup
+# Runs the initial configuration on every startup
 function startServer {
 
     # Initial setup
@@ -66,7 +65,7 @@ function startServer {
     fi
 
 
-    # CHecking is mobile app enalbed
+    # Check if the mobile app is enabled
     if [ "${MOBILE_APP}" == "true" ]; then
        echo "[INFO] Mobile app is enabled"
 
