@@ -83,7 +83,7 @@ function startServer {
     # Determine if workers should be enabled or not
     if [ "${DISABLE_WORKERS}" != "true" ]; then
         /usr/sbin/crond -f -l 0 &
-        php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3
+        php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3 &
     else 
         echo "[Warning] Disabling Workers (pteroq & cron); It is recommended to keep these enabled unless you know what you are doing."
     fi
