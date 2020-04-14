@@ -1,4 +1,4 @@
-:x: __Please note that support for v1 of Pterodactyl will come at a later date, refer to__ [here](https://github.com/ccarney16/pterodactyl-docker/wiki/Beta-Release-of-Pterodactyl)
+:x: __Support for v1 of Pterodactyl will come at a later date, all issues for this pre-release will be ignored. Please refer to__ [here](https://github.com/ccarney16/pterodactyl-docker/wiki/Beta-Release-of-Pterodactyl)
 
 # Pterodactyl Panel Dockerfile
 
