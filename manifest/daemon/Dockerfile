@@ -1,25 +1,13 @@
-FROM node:8-alpine
+FROM alpine:latest
 
-MAINTAINER Cameron Carney <ccarney16@live.com>
-
-ARG VERSION
-
-ENV DAEMON_VERSION=${VERSION} \
-    UID=500
-
-WORKDIR /srv/daemon
+LABEL maintainer="Cameron Carney <ccarney16@live.com>"
 
 RUN \
- apk --update --no-cache add coreutils curl openssl make gcc g++ python gnupg tar \
- && curl -Lo daemon.tar.gz https://github.com/Pterodactyl/Daemon/archive/${DAEMON_VERSION}.tar.gz \
- && tar --strip-components=1 -xzvf daemon.tar.gz \
- && rm -f daemon.tar.gz \
- && npm install --production \
- && addgroup -S -g ${UID} pterodactyl && adduser -S -D -H -G pterodactyl -u ${UID} -s /bin/false pterodactyl \
- && apk del curl make gcc g++ python gnupg \
- && rm -rf /root/.npm /root/.node-gyp /root/.gnupg \
- /var/cache/apk/* /tmp/*
+  apk add --no-cache ca-certificates; \
+  wget -O /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/download/v1.0.0-beta.5/wings_linux_amd64; \
+  chmod +x /usr/local/bin/wings
 
 EXPOSE 8080
+EXPOSE 2022
 
-CMD [ "npm", "start" ]
+CMD [ "/usr/local/bin/wings", "--config", "/var/lib/pterodactyl/config.yml" ]

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+###
+# Init script for this project. Creates initial project configuration
+###

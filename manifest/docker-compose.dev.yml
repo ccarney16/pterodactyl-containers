@@ -13,11 +13,3 @@ services:
         VERSION: ${DAEMON_VERSION}
       context: ./manifest/daemon
     image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION}
-  sftp:
-    build:
-      args:
-        VERSION: ${SFTP_VERSION}
-      context: ./manifest/sftp
-    image: ccarney16/pterodactyl-sftp:${SFTP_VERSION}
-    volumes_from:
-    - daemon

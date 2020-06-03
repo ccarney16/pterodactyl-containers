@@ -62,6 +62,9 @@ function startServer {
         sleep 1
         php artisan migrate --force
         php artisan db:seed --force
+
+
+        echo "--Pterodactyl Setup completed!--"
     fi
 
     # Allows Users to give MySQL/cache sometime to start up.
@@ -80,14 +83,6 @@ function startServer {
         cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
     fi
 
-    # Determine if workers should be enabled or not
-    if [ "${DISABLE_WORKERS}" != "true" ]; then
-        /usr/sbin/crond -f -l 0 &
-        php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3 &
-    else 
-        echo "[Warning] Disabling Workers (pteroq & cron); It is recommended to keep these enabled unless you know what you are doing."
-    fi
-
     /usr/sbin/php-fpm7 --nodaemonize -c /etc/php7 &
 
     exec /usr/sbin/nginx -g "daemon off;"
@@ -100,6 +95,12 @@ init
 case "${1}" in
     p:start)
         startServer
+        ;;
+    p:worker)
+        exec /usr/sbin/crond -f -l 0
+        ;;
+    p:cron)
+        exec php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3
         ;;
     *)
         exec ${@}

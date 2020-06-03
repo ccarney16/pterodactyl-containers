@@ -1,0 +1,43 @@
+###
+# Pterodactyl Panel docker-compose file
+#
+# This File contains the main panel runtime along with
+# workers, to enable this file, add the filename to
+# "COMPOSE_FILE" within .env
+###
+version: '2.1'
+services:
+
+  ##
+  # --Pterodactyl Panel--
+  # This is the container that provides the main web interface.
+  ##
+  panel:
+    env_file: ./conf.d/panel.env
+    image: ccarney16/pterodactyl-panel:latest
+    ports:
+    - 80:80
+    - 443:443
+    restart: always
+    volumes:
+    - ./data/panel:/data
+
+  ##
+  # --Worker and Cron tasks--
+  # These are required for schedules and other misc tasks to 
+  # function correctly.
+  ##
+  worker:
+    command: p:worker
+    env_file: ./conf.d/panel.env
+    image: ccarney16/pterodactyl-panel:latest
+    restart: always
+    volumes_from:
+    - panel
+  cron:
+    command: p:cron
+    env_file: ./conf.d/panel.env
+    image: ccarney16/pterodactyl-panel:latest
+    restart: always
+    volumes_from: 
+    - panel
