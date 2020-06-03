@@ -5,4 +5,9 @@ mysql_db/
 ssl/
 letsencrypt/
 .env
-docker-compose.override.yml
+
+docker-compose.*.yml
+!docker-compose.panel.yml
+!docker-compose.daemon.yml
+!docker-compose.db.yml
+!docker-compose.extra.yml

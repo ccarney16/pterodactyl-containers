@@ -10,4 +10,7 @@ RUN \
 EXPOSE 8080
 EXPOSE 2022
 
-CMD [ "/usr/local/bin/wings", "--config", "/var/lib/pterodactyl/config.yml" ]
+# Default Work Directory
+WORKDIR /var/lib/pterodactyl
+
+CMD [ "/usr/local/bin/wings", "--config", "./config.yml" ]

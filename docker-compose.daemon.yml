@@ -13,7 +13,6 @@ services:
       restart: always
       volumes:
       - "/var/lib/pterodactyl/:/var/lib/pterodactyl/"
-      - "/srv/daemon-data/:/srv/daemon-data/"
       - "/tmp/pterodactyl/:/tmp/pterodactyl/"
       - "/etc/timezone:/etc/timezone:ro"
     
