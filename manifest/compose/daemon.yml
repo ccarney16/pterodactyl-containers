@@ -1,0 +1,21 @@
+version: '2.1'
+services:
+    daemon:
+      image: ccarney16/pterodactyl-daemon:latest
+      ports:
+      - 2022:2022
+      - 8080:8080
+      privileged: true
+      restart: always
+      volumes:
+      - /var/lib/pterodactyl/:/var/lib/pterodactyl/
+      - /tmp/pterodactyl/:/tmp/pterodactyl/
+      - /etc/timezone:/etc/timezone:ro
+    
+      # Enable Let's Encrypt Support
+      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
+      - ./conf.d/certs:/etc/certs:ro
+
+      # Docker socket and directory, needed to communicate to docker
+      - /var/lib/docker:/var/lib/docker
+      - /var/run/docker.sock:/var/run/docker.sock

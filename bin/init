@@ -1,5 +1,117 @@
-#!/bin/sh
+#!/bin/bash
 
 ###
 # Init script for this project. Creates initial project configuration
 ###
+
+
+## VARIABLES
+
+interact="true" # Enable interactive mode
+
+# List of services
+enable_service_panel=""
+enable_service_node=""
+enable_service_db=""
+enable_service_le=""
+
+
+#Database Options
+database_ip_address="disabled"
+database_root_password=""
+
+node_directory=""
+
+# Functions
+
+# Returns the help message
+function _return_help {
+	echo ""
+	echo "Pterodactyl Docker Deployment Script"
+	echo "Usage: $0 [options]"
+	echo ""
+	echo "Options:"
+	echo ""
+	echo " --help  , -h      - returns this screen"
+    echo " --enable-panel    - adds panel"
+    echo " --enable-db       - adds mysql database"
+    echo " --enable-daemon   - adds daemon"
+    echo " --enable-letsencrypt - adds letsencrypt"
+	echo ""
+}
+
+function build_config {
+    local combine_args
+    local le_panel
+    if [ "$enable_service_panel" == "x" ]; then
+        le_panel="true"
+        combine_args="./manifest/compose/panel.yml"
+    fi
+    if [ "$enable_service_node" == "x" ]; then
+        combine_args=$combine_args" ./manifest/compose/daemon.yml"
+    fi
+    if [ "$enable_service_db" == "x" ]; then
+        combine_args=$combine_args" ./manifest/compose/db.yml"
+    fi
+    if [ "$enable_service_le" == "x" ]; then
+        if [ "$le_panel" == "true" ]; then
+            combine_args=$combine_args" ./manifest/compose/le.panel.yml"
+        else
+            combine_args=$combine_args" ./manifest/compose/le.daemon.yml"
+        fi
+    fi
+
+    IFS=" "
+    bin/yq merge -a ${combine_args} > docker-compose.yml
+
+    if ! [ -d "conf.d" ]; then
+        mkdir conf.d
+        cp ./manifest/config/* conf.d -rpv
+    fi
+}
+
+# Fixing some nonsense with function returning
+IFS=
+
+_COMPOSE_EXE="$(command -v docker-compose)"
+
+if [[ -z "$_COMPOSE_EXE" ]]; then
+    echo "docker-compose not found, exiting..."
+    exit 2
+fi
+
+if [ -e "docker-compose.yml" ]; then
+    echo "docker-compose.yml already exists. Please delete or change this file before running this script."
+    exit
+fi
+
+cd "$(dirname $0)/../"
+
+# Split our arguements into seperate sections
+_command=()
+for ((i=1; i<=$#; i++)); do
+    if [[ "${!i}" =~ "--" || ${!i} =~ "-" ]]; then
+        case ${!i} in
+            --help | -h)
+                _return_help
+                exit
+                ;;
+            --enable-daemon) # Enables wings
+                enable_service_node="x"
+                ;;
+            --enable-panel) # Enables panel
+                enable_service_panel="x"
+                ;;
+            --enable-db) # Enables Database
+                enable_service_db="x"
+                ;;
+            --enable-letsencrypt) # Enable Let's Encrypt
+                enable_service_le="x"
+                ;;
+        esac
+    else
+        _command+=("${!i}")
+    fi
+done
+
+build_config
