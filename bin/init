@@ -18,7 +18,7 @@ enable_sftp_daemon=""
 
 
 #Database Options
-database_ip_address="disabled"
+database_ip_address=""
 database_root_password=""
 
 node_directory=""
