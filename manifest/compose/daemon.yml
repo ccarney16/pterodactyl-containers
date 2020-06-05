@@ -1,6 +1,10 @@
 version: '2.1'
 services:
     daemon:
+      ##
+      # --Pterodactyl Daemon--
+      # This service provides the wings runtime.
+      ##
       image: ccarney16/pterodactyl-daemon:latest
       ports:
       - 2022:2022

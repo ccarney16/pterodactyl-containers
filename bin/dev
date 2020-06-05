@@ -14,4 +14,4 @@ export PANEL_VERSION
 export DAEMON_VERSION
 
 # Just pass everything to compose
-docker-compose -f docker-compose.panel.yml -f docker-compose.daemon.yml -f ./manifest/docker-compose.dev.yml $@
+docker-compose -f docker-compose.yml -f ./manifest/docker-compose.dev.yml $@

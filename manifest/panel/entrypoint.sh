@@ -12,13 +12,13 @@ function init {
         cat .storage.tmpl | while read line; do
             mkdir -p "/data/${line}"
         done
-        chown -R nginx:nginx /data/storage
     fi
 
     if [ ! -d /data/cache ]; then
         mkdir -p /data/cache
-        chown -R nginx:nginx /data/cache
     fi
+
+    chown -R nginx:nginx /data/
 
     # destroy links (or files) and recreate them
     rm -rf storage
@@ -34,9 +34,22 @@ function init {
 # Runs the initial configuration on every startup
 function startServer {
 
+    printf "Pre-start: Waiting for database connection..."
+    i=0
+    until [ nc -z -v -w30 $DB_HOST $DB_PORT ]; do
+        printf "."
+        # wait for 5 seconds before check again
+        sleep 5
+        ((i++))
+        if ((i=5)); then
+            echo "Database Connection Timeout (Is MySQL Running?)"
+            exit
+        fi
+    done
+
     # Initial setup
     if [ ! -e /data/pterodactyl.conf ]; then
-        echo "Running first time setup..."
+        echo "Setup: Running first time setup..."
 
         # Generate base template
         touch /data/pterodactyl.conf
@@ -53,12 +66,12 @@ function startServer {
         sleep 5
 
         echo ""
-        echo "Generating key..."
+        echo "Setup: Generating key..."
         sleep 1
         php artisan key:generate --force --no-interaction
 
         echo ""
-        echo "Creating & seeding database..."
+        echo "Setup: Creating & seeding database..."
         sleep 1
         php artisan migrate --force
         php artisan db:seed --force
@@ -79,7 +92,7 @@ function startServer {
         envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
         < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
     else
-        echo "[Warning] Disabling HTTPS"
+        echo "Warning: Disabling HTTPS"
         cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
     fi
 

@@ -14,6 +14,7 @@ enable_service_panel=""
 enable_service_node=""
 enable_service_db=""
 enable_service_le=""
+enable_sftp_daemon=""
 
 
 #Database Options
@@ -37,6 +38,8 @@ function _return_help {
     echo " --enable-db       - adds mysql database"
     echo " --enable-daemon   - adds daemon"
     echo " --enable-letsencrypt - adds letsencrypt"
+    echo " --db-address"
+    echo " --daemon-dir"
 	echo ""
 }
 
@@ -54,6 +57,7 @@ function build_config {
         combine_args=$combine_args" ./manifest/compose/db.yml"
     fi
     if [ "$enable_service_le" == "x" ]; then
+        echo "enabled"
         if [ "$le_panel" == "true" ]; then
             combine_args=$combine_args" ./manifest/compose/le.panel.yml"
         else
@@ -62,7 +66,16 @@ function build_config {
     fi
 
     IFS=" "
-    bin/yq merge -a ${combine_args} > docker-compose.yml
+    bin/yq merge -a ${combine_args} | bin/yq read --stripComments - > docker-compose.yml
+
+    # Modifiers for compose file
+    if [ ! "$node_directory" == "" ] && [ "$enable_service_node" == "x" ]; then
+        bin/yq write -i docker-compose.yml "services.daemon.volumes[0]" "$node_directory:$node_directory"
+    fi
+
+    if [ ! "$database_ip_address" == "" ] && [ "$enable_service_db" == "x" ]; then
+        bin/yq write -i docker-compose.yml "services.mysql.ports[0]" "$database_ip_address:3306"
+    fi
 
     if ! [ -d "conf.d" ]; then
         mkdir conf.d
@@ -80,11 +93,6 @@ if [[ -z "$_COMPOSE_EXE" ]]; then
     exit 2
 fi
 
-if [ -e "docker-compose.yml" ]; then
-    echo "docker-compose.yml already exists. Please delete or change this file before running this script."
-    exit
-fi
-
 cd "$(dirname $0)/../"
 
 # Split our arguements into seperate sections
@@ -96,6 +104,7 @@ for ((i=1; i<=$#; i++)); do
                 _return_help
                 exit
                 ;;
+            # Enable Services
             --enable-daemon) # Enables wings
                 enable_service_node="x"
                 ;;
@@ -108,6 +117,15 @@ for ((i=1; i<=$#; i++)); do
             --enable-letsencrypt) # Enable Let's Encrypt
                 enable_service_le="x"
                 ;;
+            # Modify Certain runtime options
+            --daemon-dir)
+                ((i++))
+                node_directory="${!i}"
+                ;;
+            --db-address)
+               ((i++))
+               database_ip_address="${!i}"
+               ;;
         esac
     else
         _command+=("${!i}")

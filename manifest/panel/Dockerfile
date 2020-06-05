@@ -48,7 +48,8 @@ RUN \
 RUN \
     yarn install --production; \
     yarn add cross-env; \
-    yarn run build:production;
+    yarn run build:production; \
+    rm -rf node_modules;
 
 
 # Final Production phase of the controller

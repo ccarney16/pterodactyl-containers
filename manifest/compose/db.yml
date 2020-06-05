@@ -1,17 +1,26 @@
 ###
-# Optional ProjectDependencies for Pterodactyl
+# Optional Project Dependencies for Pterodactyl
 #
 # This compose file provides the required dependencies for 
 # Pterodactyl, such as MariaDB and Redis.
 ##
 version: '2.1'
 services:
+    ##
+    # --MariaDB--
+    # Required for the control panel to work.
+    # Stores Server/User information
+    ##
     mysql:
       image: mariadb:10.4
       env_file: ./conf.d/mariadb.env
       restart: always
       volumes: 
       - ./data/db:/var/lib/mysql
+    ##
+    # --Redis--
+    # Handles Session Data
+    ##
     redis:
       image: redis:alpine
       restart: always
