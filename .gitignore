@@ -1,7 +1,5 @@
 conf.d/
 data/
-letsencrypt/
 .env
-
 docker-compose.yml
 docker-compose.override.yml

@@ -16,6 +16,8 @@ enable_service_db=""
 enable_service_le=""
 enable_sftp_daemon=""
 
+enable_build_options=""
+
 
 #Database Options
 database_ip_address=""
@@ -33,11 +35,12 @@ function _return_help {
 	echo ""
 	echo "Options:"
 	echo ""
-	echo " --help  , -h      - returns this screen"
-    echo " --enable-panel    - adds panel"
-    echo " --enable-db       - adds mysql database"
-    echo " --enable-daemon   - adds daemon"
-    echo " --enable-letsencrypt - adds letsencrypt"
+	echo " --help  , -h             - returns this screen"
+    echo " --enable-panel           - adds panel"
+    echo " --enable-db              - adds mysql database"
+    echo " --enable-daemon          - adds daemon"
+    echo " --enable-letsencrypt     - adds letsencrypt"
+    echo " --enable-build-options"
     echo " --db-address"
     echo " --daemon-dir"
 	echo ""
@@ -65,8 +68,29 @@ function build_config {
         fi
     fi
 
+    # Adds build parameters to the final compose file
+    # This will allow building of images
+    if [ "$enable_build_options" == "x" ]; then
+        echo "Adding build options to compose file..."
+        combine_args=$combine_args" ./manifest/compose/build.yml"
+        
+        # Checks if variables exist within .env
+        echo "Adding Build Variables to .env..."
+        if grep -q "PANEL_VERSION=" .env; then
+            sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
+        else
+            grep "PANEL_VERSION=" manifest/version.txt >> .env
+        fi
+        # Checks if variables exist within .env
+        if grep -q "DAEMON_VERSION=" .env; then
+            sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
+        else
+            grep "DAEMON_VERSION=" manifest/version.txt >> .env
+        fi
+    fi
+
     IFS=" "
-    bin/yq merge -a ${combine_args} | bin/yq read --stripComments - > docker-compose.yml
+    bin/yq merge -a -x ${combine_args} | bin/yq read --stripComments - > docker-compose.yml
 
     # Modifiers for compose file
     if [ ! "$node_directory" == "" ] && [ "$enable_service_node" == "x" ]; then
@@ -116,6 +140,9 @@ for ((i=1; i<=$#; i++)); do
                 ;;
             --enable-letsencrypt) # Enable Let's Encrypt
                 enable_service_le="x"
+                ;;
+            --enable-build-options)
+                enable_build_options="x"
                 ;;
             # Modify Certain runtime options
             --daemon-dir)
