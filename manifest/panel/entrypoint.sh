@@ -33,19 +33,19 @@ function init {
 
 # Runs the initial configuration on every startup
 function startServer {
-
-    printf "Pre-start: Waiting for database connection..."
+    
+    echo "Pre-start: Waiting for database connection..."
     i=0
-    until [ nc -z -v -w30 $DB_HOST $DB_PORT ]; do
-        printf "."
+    until nc -z -v -w30 $DB_HOST $DB_PORT; do
         # wait for 5 seconds before check again
         sleep 5
-        ((i++))
-        if ((i=5)); then
+        i=`expr $i + 1`
+        if [ "$i" = "5" ]; then
             echo "Database Connection Timeout (Is MySQL Running?)"
             exit
         fi
     done
+
 
     # Initial setup
     if [ ! -e /data/pterodactyl.conf ]; then
