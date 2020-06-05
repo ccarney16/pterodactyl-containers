@@ -23,3 +23,13 @@ services:
       # Docker socket and directory, needed to communicate to docker
       - /var/lib/docker:/var/lib/docker
       - /var/run/docker.sock:/var/run/docker.sock
+networks:
+  default:
+  # Create the Pterodactyl Game Network
+  # (This should prevent conflicts upon starting the network)
+  pterodactyl_nw:
+    name: pterodactyl_nw
+    driver_opts:
+      com.docker.network.bridge.name: pterodactyl0
+      # Tell apart which interfaces are game servers
+      com.docker.network.container_interface_prefix: "game_"
