@@ -17,8 +17,6 @@ RUN \
     php7-pdo_mysql php7-session php7-simplexml php7-tokenizer php7-ctype php7-zlib php7-zip tini \
     && mkdir -p /var/www/html /run/nginx
 
-COPY ./ /
-
 # Expose HTTP and HTTPS ports
 EXPOSE 80 443
 
@@ -57,3 +55,4 @@ RUN \
 FROM base as final
 
 COPY --from=devel --chown=nginx:nginx /var/www /var/www
+COPY ./ /
