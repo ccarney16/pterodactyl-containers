@@ -23,3 +23,4 @@ services:
       # Docker socket and directory, needed to communicate to docker
       - /var/lib/docker:/var/lib/docker
       - /var/run/docker.sock:/var/run/docker.sock
+      working_dir: /var/lib/pterodactyl/

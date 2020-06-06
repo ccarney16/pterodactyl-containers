@@ -18,12 +18,14 @@ enable_sftp_daemon=""
 
 enable_build_options=""
 
+# Daemon Options
+node_directory=""
+node_docker_socket=""
+node_docker_root=""
 
 #Database Options
 database_ip_address=""
 database_root_password=""
-
-node_directory=""
 
 # Functions
 
@@ -47,75 +49,86 @@ function _return_help {
 }
 
 function build_config {
-    local combine_args
-    local le_panel
+    local combine_args=""
+
+    # Panel
     if [ "$enable_service_panel" == "x" ]; then
-        le_panel="true"
         combine_args="./manifest/compose/panel.yml"
+
+        # Enable Build Options
+        if [ "$enable_build_options" == "x" ]; then
+            combine_args=$combine_args" ./manifest/compose/build.panel.yml"
+
+            if grep -q "PANEL_VERSION=" .env; then
+                sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
+            else
+                grep "PANEL_VERSION=" manifest/version.txt >> .env
+            fi
+        fi
+
+        # Enable Panel Let's Encrypt Option
+        if [ "$enable_service_le" == "x" ]; then
+            combine_args=$combine_args" ./manifest/compose/le.panel.yml"
+        fi
+
     fi
+
+
+    # Daemon
     if [ "$enable_service_node" == "x" ]; then
         combine_args=$combine_args" ./manifest/compose/daemon.yml"
-    fi
-    if [ "$enable_service_db" == "x" ]; then
-        combine_args=$combine_args" ./manifest/compose/db.yml"
-    fi
-    if [ "$enable_service_le" == "x" ]; then
-        echo "enabled"
-        if [ "$le_panel" == "true" ]; then
-            combine_args=$combine_args" ./manifest/compose/le.panel.yml"
-        else
+
+        # Enable Build Options
+        if [ "$enable_build_options" == "x" ]; then
+            combine_args=$combine_args" ./manifest/compose/build.daemon.yml"
+
+            # Checks if variables exist within .env
+            if grep -q "DAEMON_VERSION=" .env; then
+                sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
+            else
+                grep "DAEMON_VERSION=" manifest/version.txt >> .env
+            fi
+        fi
+
+        # Enable Daemon Let's Encrypt Option If Panel is not used
+        if [ "$enable_service_le" == "x" ] && [ "$enable_service_panel" == "" ]; then
             combine_args=$combine_args" ./manifest/compose/le.daemon.yml"
         fi
     fi
 
-    # Adds build parameters to the final compose file
-    # This will allow building of images
-    if [ "$enable_build_options" == "x" ]; then
-        echo "Adding build options to compose file..."
-        combine_args=$combine_args" ./manifest/compose/build.yml"
-        
-        # Checks if variables exist within .env
-        echo "Adding Build Variables to .env..."
-        if grep -q "PANEL_VERSION=" .env; then
-            sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
-        else
-            grep "PANEL_VERSION=" manifest/version.txt >> .env
-        fi
-        # Checks if variables exist within .env
-        if grep -q "DAEMON_VERSION=" .env; then
-            sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
-        else
-            grep "DAEMON_VERSION=" manifest/version.txt >> .env
-        fi
+    # Database
+    if [ "$enable_service_db" == "x" ]; then
+        combine_args=$combine_args" ./manifest/compose/db.yml"
+    fi
+
+    if [ "$combine_args" == "" ]; then
+        echo "no args have been passed, exiting..."
+        exit
     fi
 
     IFS=" "
-    bin/yq merge -a -x ${combine_args} | bin/yq read --stripComments - > docker-compose.yml
+    config="$(bin/yq merge -a -x ${combine_args} | bin/yq read --stripComments -)"
 
     # Modifiers for compose file
     if [ ! "$node_directory" == "" ] && [ "$enable_service_node" == "x" ]; then
-        bin/yq write -i docker-compose.yml "services.daemon.volumes[0]" "$node_directory:$node_directory"
+        config=$(echo "$config" | bin/yq write - "services.daemon.volumes[0]" "$node_directory:$node_directory")
+        config=$(echo "$config" | bin/yq write - "services.daemon.working_dir" "$node_directory")
     fi
 
     if [ ! "$database_ip_address" == "" ] && [ "$enable_service_db" == "x" ]; then
-        bin/yq write -i docker-compose.yml "services.mysql.ports[0]" "$database_ip_address:3306"
+        config=$(echo "$config" | bin/yq write -i docker-compose.yml "services.mysql.ports[0]" "$database_ip_address:3306")
     fi
 
     if ! [ -d "conf.d" ]; then
         mkdir conf.d
         cp ./manifest/config/* conf.d -rpv
     fi
+
+    echo "$config" > docker-compose.yml
 }
 
 # Fixing some nonsense with function returning
 IFS=
-
-_COMPOSE_EXE="$(command -v docker-compose)"
-
-if [[ -z "$_COMPOSE_EXE" ]]; then
-    echo "docker-compose not found, exiting..."
-    exit 2
-fi
 
 cd "$(dirname $0)/../"
 
@@ -149,10 +162,14 @@ for ((i=1; i<=$#; i++)); do
                 ((i++))
                 node_directory="${!i}"
                 ;;
-            --db-address)
-               ((i++))
-               database_ip_address="${!i}"
-               ;;
+            --daemon-docker-socket)
+                ;;
+            --daemon-docker-root)
+                ;;
+            --db-address) # Allows Database to be bound to a port;
+                ((i++))
+                database_ip_address="${!i}"
+                ;;
         esac
     else
         _command+=("${!i}")

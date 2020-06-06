@@ -14,9 +14,4 @@ services:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
   worker:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
-  daemon:
-    build:
-      args:
-        VERSION: ${DAEMON_VERSION}
-      context: ./manifest/daemon
-    image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION}
+
