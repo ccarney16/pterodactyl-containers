@@ -1,0 +1,112 @@
+#!/bin/bash
+
+### START VARIABLES ###
+# These are where all variables needed for the program
+
+_COMPOSE_EXE=""
+
+### END VARIABLES ###
+
+### START FUNCTIONS ###
+
+# Returns the help message
+function _return_help {
+	echo ""
+	echo "Cert Deployment Script"
+	echo "Usage: $0 COMMAND [options]"
+	echo ""
+	echo "Main commands:"
+	echo ""
+    echo "create               Deploys a certificate for use in the proxy."
+    echo ""
+	echo "Built in options:"
+	echo ""
+	echo " --help  , -h      - returns this screen"
+    echo " --entrypoint, -e  - entrypoint for config"
+    echo " --domain, -d      - add a domain."
+	echo ""
+}
+
+function _is_registered {
+    echo ""
+}
+
+function _get_certificate_info {
+    $_COMPOSE_EXE run --rm \
+    -l traefik.enable=false \
+    certbot certificates -d ${1} | \
+    grep -E "Certificate Name|Certificate Path|Private Key Path" | \
+    sed -e "s/^[ \t]*//" -e "s/\r//g"
+}
+
+## Commands ##
+
+function command_get {
+
+}
+
+function command_enable {
+    
+}
+
+function command_renew {
+
+}
+
+function command_delete {
+
+}
+
+function command_list {
+    exec $_COMPOSE_EXE \
+    run --rm certbot \
+    certificates
+}
+
+### END FUNCTIONS ###
+
+# initialize script
+cd "$(dirname $0)/../"
+
+# Fixing some nonsense with function returning
+IFS=
+
+_COMPOSE_EXE="$(command -v docker-compose)"
+
+if [[ -z "$_COMPOSE_EXE" ]]; then
+    echo "docker-compose not found, exiting..."
+    exit 2
+fi
+
+# Split our arguements into seperate sections
+_command=()
+for ((i=1; i<=$#; i++)); do
+    if [[ "${!i}" =~ "--" || ${!i} =~ "-" ]]; then
+        case ${!i} in
+            --help | -h)
+                _return_help
+                exit
+                ;;
+            --domain | -d)
+                ((i++))
+                domain_list+=("${!i}")
+                ;;
+            --entrypoint | -e)
+                ((i++))
+                entrypoint="${!i}"
+                ;;
+        esac
+    else
+        _command+=("${!i}")
+    fi
+done
+
+if [ ${#_command[@]} -gt 0 ]; then
+    if [ "$(type -t "_command_${_command[0]}")" = "function" ]; then 
+        "_command_${_command[0]}"
+    else 
+        _return_help
+    fi
+else 
+	_return_help
+fi

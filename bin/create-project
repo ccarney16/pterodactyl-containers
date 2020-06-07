@@ -73,7 +73,6 @@ function build_config {
 
     fi
 
-
     # Daemon
     if [ "$enable_service_node" == "x" ]; then
         combine_args=$combine_args" ./manifest/compose/daemon.yml"
@@ -109,7 +108,7 @@ function build_config {
     IFS=" "
     config="$(bin/yq merge -a -x ${combine_args} | bin/yq read --stripComments -)"
 
-    # Modifiers for compose file
+    # Modifiers
     if [ ! "$node_directory" == "" ] && [ "$enable_service_node" == "x" ]; then
         config=$(echo "$config" | bin/yq write - "services.daemon.volumes[0]" "$node_directory:$node_directory")
         config=$(echo "$config" | bin/yq write - "services.daemon.working_dir" "$node_directory")
