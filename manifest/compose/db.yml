@@ -14,13 +14,8 @@ services:
     mysql:
       image: mariadb:10.4
       env_file: ./conf.d/mariadb.env
+      ports:
+      - ${MYSQL_ADDRESS:-3306}
       restart: always
       volumes: 
       - ./data/db:/var/lib/mysql
-    ##
-    # --Redis--
-    # Handles Session Data
-    ##
-    redis:
-      image: redis:alpine
-      restart: always

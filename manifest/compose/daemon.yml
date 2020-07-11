@@ -12,15 +12,14 @@ services:
       privileged: true
       restart: always
       volumes:
-      - /var/lib/pterodactyl/:/var/lib/pterodactyl/
+      - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
+      - ${DAEMON_DOCKER_ROOT:-/var/lib/docker}:${DAEMON_DOCKER_ROOT:-/var/lib/docker}
+      - ${DAEMON_DOCKER_SOCKET:-/var/run/docker.sock}:${DAEMON_DOCKER_SOCKET:-/var/run/docker.sock}
+
       - /tmp/pterodactyl/:/tmp/pterodactyl/
       - /etc/timezone:/etc/timezone:ro
     
       # Enable Let's Encrypt Support
       - ./conf.d/letsencrypt:/etc/letsencrypt:ro
       - ./conf.d/certs:/etc/certs:ro
-
-      # Docker socket and directory, needed to communicate to docker
-      - /var/lib/docker:/var/lib/docker
-      - /var/run/docker.sock:/var/run/docker.sock
-      working_dir: /var/lib/pterodactyl/
+      working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}

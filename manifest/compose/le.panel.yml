@@ -9,6 +9,8 @@ version: '2.1'
 services:
   certbot:
     command: renew
+    depends_on:
+    - panel
     image: certbot/certbot:latest
     volumes:
     - ./conf.d/letsencrypt:/etc/letsencrypt

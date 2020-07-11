@@ -41,3 +41,10 @@ services:
     restart: always
     volumes_from:
     - panel
+  ##
+  # --Redis--
+  # Handles Session Data
+  ##
+  cache:
+    image: redis:alpine
+    restart: always
