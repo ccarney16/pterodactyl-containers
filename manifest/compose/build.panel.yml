@@ -14,4 +14,3 @@ services:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
   worker:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
-

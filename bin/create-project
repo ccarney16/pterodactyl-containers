@@ -10,6 +10,7 @@
 interact="true" # Enable interactive mode
 
 # List of services
+use_defaults="yes"
 enable_service_panel=""
 enable_service_node=""
 enable_service_db=""
@@ -53,13 +54,21 @@ function build_config {
     echo "Building Configuration..."
 
     IFS=" "
+
     # Build the base config
     bin/yq merge -a -x \
     $( # Enable Panel Service
         if [ "$enable_service_panel" == "x" ]; then 
             printf " ./manifest/compose/panel.yml"
+
+            # Optional Panel Services and Parameters
             if [ "$enable_build_options" == "x" ]; then
                 printf " ./manifest/compose/build.panel.yml"
+                if grep -q "PANEL_VERSION=" .env; then
+                    sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
+                else
+                    grep "PANEL_VERSION=" manifest/version.txt >> .env
+                fi
             fi
             if [ "$enable_service_le" == "x" ]; then
                 printf " ./manifest/compose/le.panel.yml"
@@ -68,10 +77,22 @@ function build_config {
     $( # Enable Daemon Service
         if [ "$enable_service_node" == "x" ]; then 
             printf " ./manifest/compose/daemon.yml"
+
+            # Optional Daemon Services and Parameters
             if [ "$enable_build_options" == "x" ]; then
                 printf " ./manifest/compose/build.daemon.yml"
+                    if grep -q "DAEMON_VERSION=" .env; then
+                        sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
+                    else
+                        grep "DAEMON_VERSION=" manifest/version.txt >> .env
+                    fi
             fi
 
+            if [ "$enable_service_le" == "x" ] && [ "$enable_service_panel" == "" ]; then
+                printf " ./manifest/compose/le.daemon.yml"
+            fi
+
+            # .env Configuration
             if [ ! $daemon_dir == "" ]; then
                 if grep -q "DAEMON_DATA_DIRECTORY=" .env; then
                     sed -i "s|DAEMON_DATA_DIRECTORY=.*|DAEMON_DATA_DIRECTORY=${daemon_dir}|" .env
@@ -99,20 +120,14 @@ function build_config {
     $( # Enable Database
         if [ "$enable_service_db" == "x" ]; then 
             printf " ./manifest/compose/db.yml"
+
+            # .env Configuration
             if [ ! $database_ip_address == "" ]; then
                 if grep -q "MYSQL_ADDRESS=" .env; then
                     sed -i "s|MYSQL_ADDRESS=.*|MYSQL_ADDRESS=$database_ip_address:3306|" .env
                 else
                     echo "MYSQL_ADDRESS=$database_ip_address:3306" >> .env
                 fi
-            fi
-        fi ) \
-    $( # Let's Encrypt Service
-        if [ "$enable_service_le" == "x" ]; then
-            if [ "$enable_service_panel" == "x" ]; then
-                printf " ./manifest/compose/le.panel.yml"
-            else
-                printf " ./manifest/compose.le.daemon.yml"
             fi
         fi ) \
     | bin/yq read --stripComments - > docker-compose.yml
@@ -141,15 +156,19 @@ for ((i=1; i<=$#; i++)); do
             # Enable Services
             --enable-daemon) # Enables wings
                 enable_service_node="x"
+                use_defaults="no"
                 ;;
             --enable-panel) # Enables panel
                 enable_service_panel="x"
+                use_defaults="no"
                 ;;
             --enable-db) # Enables Database
                 enable_service_db="x"
+                use_defaults="no"
                 ;;
             --enable-letsencrypt) # Enable Let's Encrypt
                 enable_service_le="x"
+                use_defaults="no"
                 ;;
             --enable-build-options)
                 enable_build_options="x"
