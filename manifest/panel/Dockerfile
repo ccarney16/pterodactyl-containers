@@ -1,7 +1,6 @@
 FROM alpine:edge as base
 
 ARG VERSION
-ARG ENABLE_MOBILE=false
 
 LABEL MAINTAINER="Cameron Carney <ccarney16@live.com>"
 
@@ -55,4 +54,4 @@ RUN \
 FROM base as final
 
 COPY --from=devel --chown=nginx:nginx /var/www /var/www
-COPY ./ /
+COPY ./root/ /

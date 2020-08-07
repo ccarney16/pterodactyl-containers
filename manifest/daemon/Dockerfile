@@ -1,10 +1,15 @@
 FROM alpine:latest
 
+ARG VERSION
+
 LABEL maintainer="Cameron Carney <ccarney16@live.com>"
+
+ENV DAEMON_VERSION=${VERSION}
+
 
 RUN \
   apk add --no-cache ca-certificates; \
-  wget -O /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/download/v1.0.0-beta.5/wings_linux_amd64; \
+  wget -O /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/download/${DAEMON_VERSION}/wings_linux_amd64; \
   chmod +x /usr/local/bin/wings
 
 EXPOSE 8080
