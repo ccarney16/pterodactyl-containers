@@ -43,10 +43,10 @@ function _return_help {
     echo " --daemon                 - adds daemon"
     echo " --letsencrypt            - adds letsencrypt"
     echo " --build-opts             - enables build options"
-    echo " --db-address             -"
-    echo " --daemon-dir             -"
-    echo " --daemon-docker-socket   -"
-    echo " --daemon-docker-root     -"
+    echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
+    echo " --daemon-dir             - configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
+    echo " --daemon-docker-socket   - where the daemon contacts docker (ex. /var/run/docker.sock)"
+    echo " --daemon-docker-root     - where the daemon reads docker (ex. /var/lib/docker)"
 	echo ""
 }
 
@@ -90,6 +90,11 @@ function build_config {
             # Enable Let's Encrypt for the panel.
             if [ "$enable_service_le" == "x" ]; then
                 printf " ./manifest/compose/le.panel.yml"
+
+                # Let's set the default params for webroot
+                mkdir -p ./conf.d/letsencrypt
+                rm -f ./conf.d/letsencrypt/cli.ini
+                cp ./manifest/config/letsencrypt.webroot.ini ./conf.d/letsencrypt/cli.ini
             fi
         fi ) \
     $( # Enable Daemon Service
@@ -109,6 +114,10 @@ function build_config {
             # Enable Let's Encrypt for the daemon as long as the panel is not enabled.
             if [ "$enable_service_le" == "x" ] && [ "$enable_service_panel" == "" ]; then
                 printf " ./manifest/compose/le.daemon.yml"
+
+                mkdir -p ./conf.d/letsencrypt
+                rm -f ./conf.d/letsencrypt/cli.ini
+                cp ./manifest/config/letsencrypt.standalone.ini ./conf.d/letsencrypt/cli.ini
             fi
 
             # .env Configuration
