@@ -20,6 +20,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
     
       # Enable Let's Encrypt Support
+      - ./conf.d/daemon:/etc/pterodactyl
       - ./conf.d/letsencrypt:/etc/letsencrypt:ro
       - ./conf.d/certs:/etc/certs:ro
       working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}

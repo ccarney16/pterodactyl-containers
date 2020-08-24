@@ -10,7 +10,8 @@ ENV DAEMON_VERSION=${VERSION}
 RUN \
   apk add --no-cache ca-certificates libc6-compat; \
   wget -O /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/download/${DAEMON_VERSION}/wings_linux_amd64; \
-  chmod +x /usr/local/bin/wings
+  chmod +x /usr/local/bin/wings; \
+  mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl 
 
 EXPOSE 8080
 EXPOSE 2022
@@ -18,4 +19,4 @@ EXPOSE 2022
 # Default Work Directory
 WORKDIR /var/lib/pterodactyl
 
-CMD [ "/usr/local/bin/wings", "--config", "./config.yml" ]
+CMD [ "/usr/local/bin/wings" ]
