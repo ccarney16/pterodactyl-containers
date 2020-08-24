@@ -8,7 +8,7 @@ ENV DAEMON_VERSION=${VERSION}
 
 
 RUN \
-  apk add --no-cache ca-certificates; \
+  apk add --no-cache ca-certificates libc6-compat; \
   wget -O /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/download/${DAEMON_VERSION}/wings_linux_amd64; \
   chmod +x /usr/local/bin/wings
 
