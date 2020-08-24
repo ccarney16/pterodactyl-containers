@@ -61,6 +61,14 @@ function build_config {
         enable_service_le="x"
     fi
 
+    # Create and populate the config directory
+    if ! [ -d "conf.d" ]; then
+        mkdir conf.d
+    fi
+
+    # Copy files, but do not overwrite existing files
+    cp -rpnv ./manifest/config/env/* ./conf.d/
+
     # Create .env file if it does not exist.
     if ! [ -f .env ]; then
         echo "## Project configuration file ##" > .env
@@ -159,12 +167,6 @@ function build_config {
             fi
         fi ) \
     | bin/yq read --stripComments - > docker-compose.yml
-
-    # Create and populate the config directory
-    if ! [ -d "conf.d" ]; then
-        mkdir conf.d
-        cp ./manifest/config/* conf.d -rpv
-    fi
 }
 
 # Fixing some nonsense with function returning
