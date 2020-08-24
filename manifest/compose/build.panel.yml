@@ -1,0 +1,16 @@
+##
+# Build Services dockerfile
+# Includes the build option when building the container
+##
+version: '2.1'
+services:
+  panel:
+    build:
+      args:
+        VERSION: ${PANEL_VERSION}
+      context: ./manifest/panel
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
+  cron:
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
+  worker:
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}

@@ -1,0 +1,25 @@
+version: '2.1'
+services:
+    daemon:
+      ##
+      # --Pterodactyl Daemon--
+      # This service provides the wings runtime.
+      ##
+      image: ccarney16/pterodactyl-daemon:latest
+      ports:
+      - 2022:2022
+      - 8080:8080
+      privileged: true
+      restart: always
+      volumes:
+      - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
+      - ${DAEMON_DOCKER_ROOT:-/var/lib/docker}:${DAEMON_DOCKER_ROOT:-/var/lib/docker}
+      - ${DAEMON_DOCKER_SOCKET:-/var/run/docker.sock}:${DAEMON_DOCKER_SOCKET:-/var/run/docker.sock}
+
+      - /tmp/pterodactyl/:/tmp/pterodactyl/
+      - /etc/timezone:/etc/timezone:ro
+    
+      # Enable Let's Encrypt Support
+      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
+      - ./conf.d/certs:/etc/certs:ro
+      working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}

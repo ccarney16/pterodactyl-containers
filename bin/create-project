@@ -1,0 +1,227 @@
+#!/bin/bash
+
+###
+# create-project - Creates initial project configuration
+###
+
+
+## VARIABLES
+
+interact="true" # Enable interactive mode
+
+# List of services
+use_defaults="yes"
+enable_service_panel=""
+enable_service_node=""
+enable_service_db=""
+enable_service_le=""
+enable_sftp_daemon=""
+
+enable_build_options=""
+
+# Daemon Options
+daemon_dir=""
+daemon_docker_socket=""
+daemon_docker_root=""
+
+#Database Options
+database_ip_address=""
+
+# Functions
+
+# Returns the help message
+function _return_help {
+	echo ""
+	echo "Pterodactyl Docker Deployment Script"
+	echo "Usage: $0 [options]"
+	echo ""
+	echo "Options:"
+	echo ""
+	echo " --help  , -h             - returns this screen"
+    echo " --panel                  - adds panel"
+    echo " --database               - adds mysql database"
+    echo " --daemon                 - adds daemon"
+    echo " --letsencrypt            - adds letsencrypt"
+    echo " --build-opts             - enables build options"
+    echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
+    echo " --daemon-dir             - configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
+    echo " --daemon-docker-socket   - where the daemon contacts docker (ex. /var/run/docker.sock)"
+    echo " --daemon-docker-root     - where the daemon reads docker (ex. /var/lib/docker)"
+	echo ""
+}
+
+function build_config {
+    echo "Building Configuration..."
+
+    if [ $use_defaults == "yes" ]; then
+        echo "Building project with default options: +panel, +daemon, +database, +letsencrypt"
+        enable_service_panel="x"
+        enable_service_node="x"
+        enable_service_db="x"
+        enable_service_le="x"
+    fi
+
+    # Create .env file if it does not exist.
+    if ! [ -f .env ]; then
+        echo "## Project configuration file ##" > .env
+        echo "# DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING!" >> .env
+        echo "" >> .env
+    fi
+
+    IFS=" "
+
+    # Build the base config
+    # Such a hacky way to do this, but it does appear to be cleaner
+    bin/yq merge -a -x \
+    $( # Enable Panel Service
+        if [ "$enable_service_panel" == "x" ]; then 
+            printf " ./manifest/compose/panel.yml"
+
+            # Optional Panel Services and Parameters
+            if [ "$enable_build_options" == "x" ]; then
+                printf " ./manifest/compose/build.panel.yml"
+                if grep -q "PANEL_VERSION=" .env; then
+                    sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
+                else
+                    grep "PANEL_VERSION=" manifest/version.txt >> .env
+                fi
+            fi
+
+            # Enable Let's Encrypt for the panel.
+            if [ "$enable_service_le" == "x" ]; then
+                printf " ./manifest/compose/le.panel.yml"
+
+                # Let's set the default params for webroot
+                mkdir -p ./conf.d/letsencrypt
+                rm -f ./conf.d/letsencrypt/cli.ini
+                cp ./manifest/config/letsencrypt.webroot.ini ./conf.d/letsencrypt/cli.ini
+            fi
+        fi ) \
+    $( # Enable Daemon Service
+        if [ "$enable_service_node" == "x" ]; then 
+            printf " ./manifest/compose/daemon.yml"
+
+            # Optional Daemon Services and Parameters
+            if [ "$enable_build_options" == "x" ]; then
+                printf " ./manifest/compose/build.daemon.yml"
+                    if grep -q "DAEMON_VERSION=" .env; then
+                        sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
+                    else
+                        grep "DAEMON_VERSION=" manifest/version.txt >> .env
+                    fi
+            fi
+
+            # Enable Let's Encrypt for the daemon as long as the panel is not enabled.
+            if [ "$enable_service_le" == "x" ] && [ "$enable_service_panel" == "" ]; then
+                printf " ./manifest/compose/le.daemon.yml"
+
+                mkdir -p ./conf.d/letsencrypt
+                rm -f ./conf.d/letsencrypt/cli.ini
+                cp ./manifest/config/letsencrypt.standalone.ini ./conf.d/letsencrypt/cli.ini
+            fi
+
+            # .env Configuration
+            if [ ! $daemon_dir == "" ]; then
+                if grep -q "DAEMON_DATA_DIRECTORY=" .env; then
+                    sed -i "s|DAEMON_DATA_DIRECTORY=.*|DAEMON_DATA_DIRECTORY=${daemon_dir}|" .env
+                else
+                    echo "DAEMON_DATA_DIRECTORY=$daemon_dir" >> .env
+                fi
+            fi
+
+            if [ ! $daemon_docker_root == "" ]; then
+                if grep -q "DAEMON_DOCKER_ROOT=" .env; then
+                    sed -i "s|DAEMON_DOCKER_ROOT=.*|DAEMON_DOCKER_ROOT=$daemon_docker_root|" .env
+                else
+                    echo "DAEMON_DOCKER_ROOT=$daemon_docker_root" >> .env
+                fi
+            fi
+
+            if [ ! $daemon_docker_socket == "" ]; then
+                if grep -q "DAEMON_DOCKER_SOCKET=" .env; then
+                    sed -i "s|DAEMON_DOCKER_SOCKET=.*|DAEMON_DOCKER_SOCKET=$daemon_docker_socket|" .env
+                else
+                    echo "DAEMON_DOCKER_SOCKET=$daemon_docker_socket" >> .env
+                fi
+            fi
+        fi ) \
+    $( # Enable Database
+        if [ "$enable_service_db" == "x" ]; then 
+            printf " ./manifest/compose/db.yml"
+
+            # .env Configuration
+            if [ ! $database_ip_address == "" ]; then
+                if grep -q "MYSQL_ADDRESS=" .env; then
+                    sed -i "s|MYSQL_ADDRESS=.*|MYSQL_ADDRESS=$database_ip_address:3306|" .env
+                else
+                    echo "MYSQL_ADDRESS=$database_ip_address:3306" >> .env
+                fi
+            fi
+        fi ) \
+    | bin/yq read --stripComments - > docker-compose.yml
+
+    # Create and populate the config directory
+    if ! [ -d "conf.d" ]; then
+        mkdir conf.d
+        cp ./manifest/config/* conf.d -rpv
+    fi
+}
+
+# Fixing some nonsense with function returning
+IFS=
+
+cd "$(dirname $0)/../"
+
+# Split our arguements into seperate sections
+_command=()
+for ((i=1; i<=$#; i++)); do
+    if [[ "${!i}" =~ "--" || ${!i} =~ "-" ]]; then
+        case ${!i} in
+            --help | -h)
+                _return_help
+                exit
+                ;;
+            # Enable Services
+            --enable-daemon | --daemon) # Enables wings
+                enable_service_node="x"
+                use_defaults="no"
+                ;;
+            --enable-panel | --panel) # Enables panel
+                enable_service_panel="x"
+                use_defaults="no"
+                ;;
+            --enable-db  | --database) # Enables Database
+                enable_service_db="x"
+                use_defaults="no"
+                ;;
+            --enable-letsencrypt | --letsencrypt) # Enable Let's Encrypt
+                enable_service_le="x"
+                use_defaults="no"
+                ;;
+            --enable-build-options | --build-opts)
+                enable_build_options="x"
+                ;;
+            # Modify Certain runtime options
+            --daemon-dir)
+                ((i++))
+                daemon_dir="${!i}"
+                ;;
+            --daemon-docker-socket)
+                ((i++))
+                daemon_docker_socket="${!i}"
+                ;;
+            --daemon-docker-root)
+                ((i++))
+                daemon_docker_root="${!i}"
+                ;;
+            --db-address) # Allows Database to be bound to a port;
+                ((i++))
+                database_ip_address="${!i}"
+                ;;
+        esac
+    else
+        _command+=("${!i}")
+    fi
+done
+
+build_config

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+##
+# php artisan wrapper, nothing special here
+##
+
+cd "$(dirname $0)/../"
+
+docker-compose run --rm panel php artisan ${@}

@@ -1,0 +1,17 @@
+##
+# Let's Encrypt Service
+#
+# This is the panel version of the service, as such, it will rely on using
+# the webroot for its configuration. This panel varient will always override
+# the daemon when enabled.
+##
+version: '2.1'
+services:
+  certbot:
+    command: renew
+    depends_on:
+    - panel
+    image: certbot/certbot:latest
+    volumes:
+    - ./conf.d/letsencrypt:/etc/letsencrypt
+    - ./conf.d/webroot/.well-known:/var/www/html/public/.well-known

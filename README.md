@@ -1,14 +1,12 @@
 
 
-# Pterodactyl Panel Dockerfile
-
-[![Docker Repository on Quay](https://quay.io/repository/ccarney/pterodactyl-panel/status "Docker Repository on Quay")](https://quay.io/repository/ccarney/pterodactyl-panel)
+# ccarney16/pterodactyl-containers
 
 Pterodactyl, a free an open source agnostic game panel... In a Container!
 
 ## Installing
 
-Refer to INSTALL.md for the quick overview and detailed setup.
+Refer to the github wiki for the quick overview and detailed setup.
 
 ## Contributing
 

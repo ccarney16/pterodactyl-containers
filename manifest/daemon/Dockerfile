@@ -1,25 +1,21 @@
-FROM node:8-alpine
-
-MAINTAINER Cameron Carney <ccarney16@live.com>
+FROM alpine:latest
 
 ARG VERSION
 
-ENV DAEMON_VERSION=${VERSION} \
-    UID=500
+LABEL maintainer="Cameron Carney <ccarney16@live.com>"
 
-WORKDIR /srv/daemon
+ENV DAEMON_VERSION=${VERSION}
+
 
 RUN \
- apk --update --no-cache add coreutils curl openssl make gcc g++ python gnupg tar \
- && curl -Lo daemon.tar.gz https://github.com/Pterodactyl/Daemon/archive/${DAEMON_VERSION}.tar.gz \
- && tar --strip-components=1 -xzvf daemon.tar.gz \
- && rm -f daemon.tar.gz \
- && npm install --production \
- && addgroup -S -g ${UID} pterodactyl && adduser -S -D -H -G pterodactyl -u ${UID} -s /bin/false pterodactyl \
- && apk del curl make gcc g++ python gnupg \
- && rm -rf /root/.npm /root/.node-gyp /root/.gnupg \
- /var/cache/apk/* /tmp/*
+  apk add --no-cache ca-certificates; \
+  wget -O /usr/local/bin/wings https://github.com/pterodactyl/wings/releases/download/${DAEMON_VERSION}/wings_linux_amd64; \
+  chmod +x /usr/local/bin/wings
 
 EXPOSE 8080
+EXPOSE 2022
 
-CMD [ "npm", "start" ]
+# Default Work Directory
+WORKDIR /var/lib/pterodactyl
+
+CMD [ "/usr/local/bin/wings", "--config", "./config.yml" ]
