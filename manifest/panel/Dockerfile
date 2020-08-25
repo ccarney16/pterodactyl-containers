@@ -1,11 +1,11 @@
 FROM alpine:edge as base
 
-ARG VERSION
-
 LABEL MAINTAINER="Cameron Carney <ccarney16@live.com>"
 
+ARG VERSION
+
 ENV STARTUP_TIMEOUT=5 \
-    PANEL_VERSION=${VERSION}
+    PANEL_VERSION=$VERSION
 
 WORKDIR /var/www/html
 VOLUME [ "/data" ]
@@ -28,12 +28,11 @@ CMD [ "p:start" ]
 FROM base as devel
 
 RUN \
-    apk add yarn
+    apk add yarn git
 
 RUN \
-    curl -Lo panel.tar.gz https://github.com/Pterodactyl/Panel/archive/${PANEL_VERSION}.tar.gz \
-    && tar --strip-components=1 -xzvf panel.tar.gz \
-    && rm panel.tar.gz \
+    git clone https://github.com/pterodactyl/panel ./ -b ${PANEL_VERSION} \
+    && rm .git -rf \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
