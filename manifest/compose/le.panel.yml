@@ -12,6 +12,5 @@ services:
     depends_on:
     - panel
     image: certbot/certbot:latest
-    volumes:
-    - ./conf.d/letsencrypt:/etc/letsencrypt
-    - ./conf.d/webroot/.well-known:/var/www/html/public/.well-known
+    volumes_from:
+    - panel

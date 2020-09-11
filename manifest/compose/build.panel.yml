@@ -9,8 +9,3 @@ services:
       args:
         VERSION: ${PANEL_VERSION}
       context: ./manifest/panel
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
-  cron:
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}
-  worker:
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION}

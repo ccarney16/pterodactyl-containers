@@ -5,4 +5,3 @@ services:
       args:
         VERSION: ${DAEMON_VERSION}
       context: ./manifest/daemon
-    image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION}

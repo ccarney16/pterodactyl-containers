@@ -123,6 +123,7 @@ function build_config {
             if [ "$enable_service_le" == "x" ] && [ "$enable_service_panel" == "" ]; then
                 printf " ./manifest/compose/le.daemon.yml"
 
+                # Build config directory and copy let's encrypt settings
                 mkdir -p ./conf.d/letsencrypt
                 rm -f ./conf.d/letsencrypt/cli.ini
                 cp ./manifest/config/letsencrypt.standalone.ini ./conf.d/letsencrypt/cli.ini

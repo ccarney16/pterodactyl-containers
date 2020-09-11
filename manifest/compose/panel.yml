@@ -6,7 +6,7 @@ services:
   ##
   panel:
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:latest
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     ports:
     - 80:80
     - 443:443
@@ -14,9 +14,9 @@ services:
     volumes:
     - ./data/panel:/data
     # Enable Let's Encrypt Support
-    - ./conf.d/letsencrypt:/etc/letsencrypt:ro
-    - ./conf.d/webroot/.well-known:/var/www/html/public/.well-known:ro
-    - ./conf.d/certs:/etc/certs:ro
+    - ./conf.d/letsencrypt:/etc/letsencrypt
+    - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
+    - ./conf.d/certs:/etc/certs
   ##
   # --Worker--
   # These are required for schedules and other misc tasks to 
@@ -25,7 +25,7 @@ services:
   worker:
     command: p:worker
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:latest
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     restart: always
     volumes_from:
     - panel
@@ -37,7 +37,7 @@ services:
   cron:
     command: p:cron
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:latest
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     restart: always
     volumes_from:
     - panel
