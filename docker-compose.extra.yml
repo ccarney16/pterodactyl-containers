@@ -31,14 +31,14 @@ panel:
 worker:
   command: php /var/www/html/artisan queue:work database --queue=high,standard,low --sleep=3 --tries=3
   env_file: .env
-  image: quay.io/ccarney/pterodactyl-panel:latest
+  image: quay.io/ccarney/pterodactyl-panel:v0.7.18
   restart: always
   volumes_from:
   - panel
 cron:
   command: /usr/sbin/crond -f -l 0
   env_file: .env
-  image: quay.io/ccarney/pterodactyl-panel:latest
+  image: quay.io/ccarney/pterodactyl-panel:v0.7.18
   restart: always
   volumes_from:
   - panel
