@@ -1,8 +1,9 @@
+.bak/
 conf.d/
 data/
 .env
 docker-compose.yml
-docker-compose.override.yml
+docker-compose.*.yml
 
 # Allow users to create custom dockerfiles and add user content.
 manifest/panel/user
