@@ -5,8 +5,10 @@ services:
   # This is the container that provides the main web interface.
   ##
   panel:
+    depends_on:
+    - cache
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    image: ccarney16/pterodactyl-panel:latest
     ports:
     - 80:80
     - 443:443
@@ -25,7 +27,7 @@ services:
   worker:
     command: p:worker
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    image: ccarney16/pterodactyl-panel:latest
     restart: always
     volumes_from:
     - panel
@@ -37,7 +39,7 @@ services:
   cron:
     command: p:cron
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    image: ccarney16/pterodactyl-panel:latest
     restart: always
     volumes_from:
     - panel

@@ -5,7 +5,12 @@
 version: '2.1'
 services:
   panel:
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     build:
       args:
         VERSION: ${PANEL_VERSION}
       context: ./manifest/panel
+  worker:
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+  cron:
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}

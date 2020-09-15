@@ -5,7 +5,7 @@ services:
       # --Pterodactyl Daemon--
       # This service provides the wings runtime.
       ##
-      image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+      image: ccarney16/pterodactyl-daemon:latest
       ports:
       - 2022:2022
       - 8080:8080
