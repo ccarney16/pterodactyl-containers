@@ -146,16 +146,16 @@ function build_config {
     if [ "$flag_enable_db" == "x" ]; then
         if [ ! $config_database_ip_address == "" ]; then
             if grep -q "MYSQL_ADDRESS=" .env; then
-                sed -i "s|MYSQL_ADDRESS=.*|MYSQL_ADDRESS=$database_ip_address:3306|" .env
+                sed -i "s|MYSQL_ADDRESS=.*|MYSQL_ADDRESS=$config_database_ip_address:3306|" .env
             else
-                echo "MYSQL_ADDRESS=$database_ip_address:3306" >> .env
+                echo "MYSQL_ADDRESS=$config_database_ip_address:3306" >> .env
             fi
         fi
     fi
 
     # Create conf.d/data directory
 
-    # Make directory and populate it with base config files
+    # Make directory and populate it with base environment files
     mkdir -p conf.d
     cp -rpnv ./manifest/config/env/* ./conf.d/
 
