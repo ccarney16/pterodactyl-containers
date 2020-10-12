@@ -5,7 +5,7 @@ LABEL MAINTAINER="Cameron Carney <ccarney16@live.com>"
 ARG VERSION
 
 ENV STARTUP_TIMEOUT=5 \
-    PANEL_VERSION=$VERSION
+    VERSION=${VERSION}
 
 WORKDIR /var/www/html
 VOLUME [ "/data" ]
@@ -27,11 +27,13 @@ CMD [ "p:start" ]
 # This is where composer is added and pterodactyl properly setup
 FROM base as devel
 
-RUN \
-    apk add yarn git
+ARG GIT_BRANCH=release/${VERSION}
 
 RUN \
-    git clone https://github.com/pterodactyl/panel ./ -b ${PANEL_VERSION} \
+    apk add yarn git;
+
+RUN \
+    git clone https://github.com/pterodactyl/panel ./ -b ${GIT_BRANCH} \
     && rm .git -rf \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \

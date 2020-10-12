@@ -82,10 +82,10 @@ function startServer {
 
     # Allows Users to give MySQL/cache sometime to start up.
     if [[ "${STARTUP_TIMEOUT}" -gt "0" ]]; then
-        echo "Starting Pterodactyl ${PANEL_VERSION} in ${STARTUP_TIMEOUT} seconds..."
+        echo "Starting Pterodactyl ${VERSION} in ${STARTUP_TIMEOUT} seconds..."
         sleep ${STARTUP_TIMEOUT}
     else 
-        echo "Starting Pterodactyl ${PANEL_VERSION}..."
+        echo "Starting Pterodactyl ${VERSION}..."
     fi
 
     if [ "${SSL}" == "true" ]; then
