@@ -15,6 +15,9 @@ flag_enable_db=""
 flag_enable_le=""
 flag_enable_build=""
 
+# Allows configuring where the output can be put out to.
+flag_stdout="docker-compose.yml"
+
 # Daemon Configuration
 config_daemon_dir=""
 config_daemon_docker_socket=""
@@ -47,7 +50,7 @@ function _return_help {
 }
 
 function build_config {
-    echo "Building Configuration..."
+    >&2 echo "Building Configuration..."
 
     IFS=" "
 
@@ -86,7 +89,7 @@ function build_config {
         if [ "$flag_enable_db" == "x" ]; then 
             printf " ./manifest/compose/db.yml"
         fi ) \
-    | bin/yq read --stripComments - > docker-compose.yml
+    | bin/yq read --stripComments - > $flag_stdout
 
 
     # Build .env Configuration
@@ -96,7 +99,6 @@ function build_config {
         echo "## Project configuration file ##" > .env
         echo "# DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING!" >> .env
         echo "" >> .env
-        echo "CMD_ARGS=$($command_args)" >> .env
     fi
 
     if [ "$flag_enable_panel" == "x" ]; then
