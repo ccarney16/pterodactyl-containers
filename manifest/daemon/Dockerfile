@@ -24,6 +24,7 @@ RUN \
 
 # Copy wings from build stage
 COPY --from=build /wings/wings /usr/local/bin
+COPY ./root /
 
 EXPOSE 8080
 EXPOSE 2022
@@ -31,4 +32,4 @@ EXPOSE 2022
 # Default Work Directory
 WORKDIR /var/lib/pterodactyl
 
-CMD [ "/usr/local/bin/wings" ]
+CMD [ "/entrypoint.sh" ]
