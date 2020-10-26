@@ -2,7 +2,7 @@
 # Build Services dockerfile
 # Includes the build option when building the container
 ##
-version: '2.1'
+version: '2.3'
 services:
   panel:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}

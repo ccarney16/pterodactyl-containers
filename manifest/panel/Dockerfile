@@ -4,8 +4,7 @@ LABEL MAINTAINER="Cameron Carney <ccarney16@live.com>"
 
 ARG VERSION
 
-ENV STARTUP_TIMEOUT=5 \
-    VERSION=${VERSION}
+ENV VERSION=${VERSION}
 
 WORKDIR /var/www/html
 VOLUME [ "/data" ]

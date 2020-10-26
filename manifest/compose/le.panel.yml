@@ -5,12 +5,13 @@
 # the webroot for its configuration. This panel varient will always override
 # the daemon when enabled.
 ##
-version: '2.1'
+version: '2.3'
 services:
   certbot:
     command: renew
     depends_on:
-    - panel
+      panel:
+        condition: service_healthy
     image: certbot/certbot:latest
     volumes_from:
     - panel

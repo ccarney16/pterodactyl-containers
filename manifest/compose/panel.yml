@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2.3'
 services:
   ##
   # --Pterodactyl Panel--
@@ -6,8 +6,15 @@ services:
   ##
   panel:
     depends_on:
-    - cache
+      cache:
+        condition: service_started
     env_file: ./conf.d/panel.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 1m
     image: ccarney16/pterodactyl-panel:latest
     ports:
     - 80:80
@@ -26,6 +33,9 @@ services:
   ##
   worker:
     command: p:worker
+    depends_on:
+      panel:
+        condition: service_healthy
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:latest
     restart: always
@@ -38,6 +48,9 @@ services:
   ##
   cron:
     command: p:cron
+    depends_on:
+      panel:
+        condition: service_healthy
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:latest
     restart: always

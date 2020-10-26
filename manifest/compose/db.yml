@@ -4,7 +4,7 @@
 # This compose file provides the required dependencies for 
 # Pterodactyl, such as MariaDB and Redis.
 ##
-version: '2.1'
+version: '2.3'
 services:
     ##
     # --MariaDB--
