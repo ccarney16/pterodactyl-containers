@@ -5,6 +5,8 @@ services:
       # --Pterodactyl Daemon--
       # This service provides the wings runtime.
       ##
+      environment:
+      - TZ=${DAEMON_TIMEZONE:-UTC}
       image: ccarney16/pterodactyl-daemon:latest
       ports:
       - 2022:2022
@@ -17,7 +19,6 @@ services:
       - ${DAEMON_DOCKER_SOCKET:-/var/run/docker.sock}:${DAEMON_DOCKER_SOCKET:-/var/run/docker.sock}
 
       - /tmp/pterodactyl/:/tmp/pterodactyl/
-      - /etc/timezone:/etc/timezone:ro
     
       # Enable Let's Encrypt Support
       - ./conf.d/daemon:/etc/pterodactyl
