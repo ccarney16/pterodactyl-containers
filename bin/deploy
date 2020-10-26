@@ -185,7 +185,7 @@ cd "$(dirname $0)/../"
 # Split our arguements into seperate sections
 _command=()
 for ((i=1; i<=$#; i++)); do
-    if [[ "${!i}" =~ "--" || ${!i} =~ "-" ]]; then
+    if [[ "${!i}" == -* ]]; then
         case ${!i} in
             --help | -h)
                 _return_help
