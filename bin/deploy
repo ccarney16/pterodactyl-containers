@@ -63,7 +63,7 @@ function build_config {
 
             # Optional Panel Services and Parameters
             if [ "$flag_enable_build" == "x" ]; then
-                printf " ./manifest/compose/build.panel.yml"
+                printf " ./manifest/compose/build/panel.yml"
             fi
 
             # Enable Let's Encrypt for the panel.
@@ -77,7 +77,7 @@ function build_config {
 
             # Optional Daemon Services and Parameters
             if [ "$flag_enable_build" == "x" ]; then
-                printf " ./manifest/compose/build.daemon.yml"
+                printf " ./manifest/compose/build/daemon.yml"
             fi
 
             # Enable Let's Encrypt for the daemon as long as the panel is not enabled.
