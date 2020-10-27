@@ -7,4 +7,5 @@ services:
       ofelia.job-exec.daemon-reload.command: "kill -15 1"
   cron:
     depends_on:
-    - daemon
+      daemon:
+        condition: service_started

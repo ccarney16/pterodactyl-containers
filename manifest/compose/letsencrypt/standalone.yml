@@ -24,8 +24,8 @@ services:
   cron:
     command: daemon --docker
     depends_on:
-      daemon:
-        condition: service_started
+      certbot:
+        condition: service_created
     image: mcuadros/ofelia:latest
     privileged: true
     restart: always

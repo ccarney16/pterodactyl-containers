@@ -20,3 +20,7 @@ services:
       ofelia.job-run.le-renew.container: pterodactyl_certbot
     volumes_from:
     - panel
+  cron:
+    depends_on:
+      certbot:
+        condition: service_started
