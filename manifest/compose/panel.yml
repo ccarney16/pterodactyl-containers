@@ -48,6 +48,11 @@ services:
     - panel
   cron:
     command: daemon --docker
+    depends_on:
+      panel:
+        condition: service_healthy
+      worker:
+        condition: service_started
     image: mcuadros/ofelia:latest
     privileged: true
     restart: always

@@ -23,6 +23,9 @@ services:
     - ./conf.d/letsencrypt:/etc/letsencrypt
   cron:
     command: daemon --docker
+    depends_on:
+      daemon:
+        condition: service_started
     image: mcuadros/ofelia:latest
     privileged: true
     restart: always
