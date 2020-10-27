@@ -12,5 +12,4 @@ services:
       context: ./manifest/panel
   worker:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
-  cron:
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+
