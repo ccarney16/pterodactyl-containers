@@ -4,7 +4,7 @@ echo "Pre-start: Checking for Daemon configuration..."
 
 count=1
 while [ ! -f /etc/pterodactyl/config.yml ]; do
-    echo "Pre-start: Daemon config does not exist... Waiting [Try " $count "]"
+    echo "Pre-start: Daemon config does not exist... Waiting [Try "$count"]"
     count=`expr $count + 1`
     sleep 15
 done

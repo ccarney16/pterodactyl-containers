@@ -32,4 +32,4 @@ EXPOSE 2022
 # Default Work Directory
 WORKDIR /var/lib/pterodactyl
 
-CMD [ "tini", "--", "/entrypoint.sh" ]
+ENTRYPOINT [ "tini", "--", "/entrypoint.sh" ]
