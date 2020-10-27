@@ -1,0 +1,7 @@
+version: '2.3'
+services:
+  daemon:
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.daemon-reload.schedule: "0 30 * * *"
+      ofelia.job-exec.daemon-reload.command: "kill -15 1"

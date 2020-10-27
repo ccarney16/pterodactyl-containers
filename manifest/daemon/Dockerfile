@@ -19,7 +19,7 @@ ARG VERSION
 ENV VERSION=${VERSION}
 
 RUN \
-  apk add --no-cache ca-certificates; \
+  apk add --no-cache ca-certificates tini; \
   mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl 
 
 # Copy wings from build stage
@@ -32,4 +32,4 @@ EXPOSE 2022
 # Default Work Directory
 WORKDIR /var/lib/pterodactyl
 
-CMD [ "/entrypoint.sh" ]
+CMD [ "tini", "--", "/entrypoint.sh" ]
