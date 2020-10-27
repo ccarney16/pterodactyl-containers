@@ -68,7 +68,7 @@ function build_config {
 
             # Enable Let's Encrypt for the panel.
             if [ "$flag_enable_le" == "x" ]; then
-                printf " ./manifest/compose/letsencrypt/panel.yml ./manifest/compose/letsencrypt/panel.yml"
+                printf " ./manifest/compose/letsencrypt/webroot.yml ./manifest/compose/letsencrypt/panel.yml"
             fi
         fi ) \
     $( # Enable Daemon
