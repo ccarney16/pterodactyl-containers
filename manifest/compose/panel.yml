@@ -41,7 +41,7 @@ services:
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.pqueue.schedule: "* * * * *"
-      ofelia.job-exec.pqueue.command: "php /var/www/pterodactyl/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3"
+      ofelia.job-exec.pqueue.command: "php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3"
       ofelia.job-exec.pqueue.user: "nginx"
     restart: always
     volumes_from:
