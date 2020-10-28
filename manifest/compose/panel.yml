@@ -68,5 +68,4 @@ services:
     cpu_percent: 50
     image: redis:alpine
     mem_limit: 128m
-    pids_limit: 5
     restart: always
