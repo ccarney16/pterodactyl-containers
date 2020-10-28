@@ -25,8 +25,9 @@ services:
     command: daemon --docker
     depends_on:
       certbot:
-        condition: service_created
+        condition: service_started
     image: mcuadros/ofelia:latest
+    network_mode: none
     privileged: true
     restart: always
     volumes:

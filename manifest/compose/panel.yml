@@ -54,6 +54,7 @@ services:
       worker:
         condition: service_started
     image: mcuadros/ofelia:latest
+    network_mode: none
     privileged: true
     restart: always
     volumes:
@@ -63,5 +64,9 @@ services:
   # Handles Session Data
   ##
   cache:
+    cpu_count: 2
+    cpu_percent: 50
     image: redis:alpine
+    mem_limit: 128m
+    pids_limit: 5
     restart: always
