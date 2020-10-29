@@ -1,5 +1,10 @@
 version: '2.3'
 services:
+  ##
+  # panel
+  # This provides an added dependency for the panel when
+  # both the panel and database are enabled
+  ##
   panel:
     depends_on:
       mysql:

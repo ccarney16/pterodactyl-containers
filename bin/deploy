@@ -86,6 +86,10 @@ function build_config {
             else
                 printf " ./manifest/compose/letsencrypt/standalone.yml"
             fi
+
+            if [ "$flag_enable_daemon" == "x" ]; then
+                printf " ./manifest/compose/letsencrypt/daemon.dep.yml"
+            fi
         fi
     ) \
     $( # Enable Database
