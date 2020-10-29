@@ -8,9 +8,6 @@ version: '2.3'
 services:
   certbot:
     container_name: pterodactyl_certbot
-    depends_on:
-      panel:
-        condition: service_healthy
     image: certbot/certbot:latest
     labels:
       ofelia.enabled: "true"
@@ -26,9 +23,16 @@ services:
     depends_on:
       certbot:
         condition: service_started
+      daemon:
+        condition: service_started
     image: mcuadros/ofelia:latest
     network_mode: none
     privileged: true
     restart: always
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+  daemon:
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.daemon-reload.schedule: "${DAEMON_RELOAD_SCHEDULE:-0 30 * * *}"
+      ofelia.job-exec.daemon-reload.command: "kill -15 1"

@@ -36,9 +36,9 @@ function _return_help {
 	echo "Options:"
 	echo ""
 	echo " --help  , -h             - returns this screen"
-    echo " --panel                  - adds panel"
+    echo " --panel                  - adds panel [*]"
+    echo " --daemon                 - adds daemon [*]"
     echo " --database               - adds mysql database"
-    echo " --daemon                 - adds daemon"
     echo " --letsencrypt            - adds letsencrypt"
     echo " --build                  - enables build options"
     echo ""
@@ -47,6 +47,9 @@ function _return_help {
     echo " --daemon-docker-root     - where the daemon reads docker (ex. /var/lib/docker)"
 	echo ""
     echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
+    echo ""
+    echo " [*] When building a custom docker-compose file, you must specify either the panel or daemon to build"
+    echo ""
 }
 
 function build_config {
@@ -66,10 +69,6 @@ function build_config {
                 printf " ./manifest/compose/build/panel.yml"
             fi
 
-            # Enable Let's Encrypt for the panel.
-            if [ "$flag_enable_le" == "x" ]; then
-                printf " ./manifest/compose/letsencrypt/webroot.yml ./manifest/compose/letsencrypt/panel.yml"
-            fi
         fi ) \
     $( # Enable Daemon
         if [ "$flag_enable_daemon" == "x" ]; then 
@@ -79,18 +78,22 @@ function build_config {
             if [ "$flag_enable_build" == "x" ]; then
                 printf " ./manifest/compose/build/daemon.yml"
             fi
-
-            # Enable Let's Encrypt for the daemon as long as the panel is not enabled.
-            if [ "$flag_enable_le" == "x" ]; then
-                if [ "$flag_enable_panel" == "" ]; then
-                    printf " ./manifest/compose/letsencrypt/standalone.yml"
-                fi
-                printf " ./manifest/compose/letsencrypt/daemon.yml"
-            fi
         fi ) \
+    $( # Enable Let's Encrypt
+        if [ "$flag_enable_le" == "x" ]; then
+            if [ "$flag_enable_panel" == "x" ]; then
+                printf " ./manifest/compose/letsencrypt/webroot.yml"
+            else
+                printf " ./manifest/compose/letsencrypt/standalone.yml"
+            fi
+        fi
+    ) \
     $( # Enable Database
         if [ "$flag_enable_db" == "x" ]; then 
-            printf " ./manifest/compose/db.yml"
+            printf " ./manifest/compose/database/database.yml"
+            if [ "$flag_enable_panel" == "x" ]; then
+                printf " ./manifest/compose/database/panel.dep.yml"
+            fi
         fi ) \
     | bin/yq read --stripComments - > $flag_stdout
 
@@ -243,5 +246,11 @@ if [ $missing_flags == "yes" ]; then
     flag_enable_db="x"
     flag_enable_le="x"
 fi
+
+if [ "$flag_enable_panel" = "" ] && [ "$flag_enable_daemon" = "" ]; then
+    echo "Error! Missing --panel and or --daemon flag! You must specify at least one when building a custom compose file."
+    exit
+fi
+
 
 build_config

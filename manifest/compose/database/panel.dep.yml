@@ -1,0 +1,6 @@
+version: '2.3'
+services:
+  panel:
+    depends_on:
+      mysql:
+        condition: service_started

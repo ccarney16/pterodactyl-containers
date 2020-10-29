@@ -1,7 +1,0 @@
-version: '2.3'
-services:
-  panel:
-    labels:
-      ofelia.enabled: "true"
-      ofelia.job-exec.panel-reload.schedule: "${PANEL_RELOAD_SCHEDULE:-0 30 * * *}"
-      ofelia.job-exec.panel-reload.command: "nginx -s reload"
