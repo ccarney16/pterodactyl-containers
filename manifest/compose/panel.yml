@@ -38,28 +38,34 @@ services:
         condition: service_healthy
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:latest
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.pqueue.schedule: "@every 1m"
+      ofelia.job-exec.pqueue.command: "php /var/www/html/artisan schedule:run"
+      ofelia.job-exec.pqueue.user: "nginx"
     restart: always
     volumes_from:
     - panel
-  ##
-  # --Cron--
-  # These are required for schedules and other misc tasks to 
-  # function correctly.
-  ##
   cron:
-    command: p:cron
+    command: daemon --docker
     depends_on:
       panel:
         condition: service_healthy
-    env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:latest
+      worker:
+        condition: service_started
+    image: mcuadros/ofelia:latest
+    network_mode: none
+    privileged: true
     restart: always
-    volumes_from:
-    - panel
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
   ##
   # --Redis--
   # Handles Session Data
   ##
   cache:
+    cpu_count: 2
+    cpu_percent: 50
     image: redis:alpine
+    mem_limit: 128m
     restart: always

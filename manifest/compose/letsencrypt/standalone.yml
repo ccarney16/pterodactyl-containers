@@ -1,0 +1,36 @@
+version: '2.3'
+services:
+  ##
+  # Let's Encrypt Service
+  #
+  # This is the daemon version of the service. HTTP/HTTPS ports are enabled.
+  # This Config will NOT be used if both the panel and daemon.
+  ##
+  certbot:
+    container_name: pterodactyl_certbot
+    image: certbot/certbot:latest
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-run.le-renew.schedule: "0 0 * * *"
+      ofelia.job-run.le-renew.container: pterodactyl_certbot
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - ./conf.d/letsencrypt:/etc/letsencrypt
+  ##
+  # cron
+  # This is identical with the base panel version, this is included
+  # to provide a cron task for the daemon and certbot
+  ##
+  cron:
+    command: daemon --docker
+    depends_on:
+      certbot:
+        condition: service_started
+    image: mcuadros/ofelia:latest
+    network_mode: none
+    privileged: true
+    restart: always
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

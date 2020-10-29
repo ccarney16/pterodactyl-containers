@@ -104,10 +104,10 @@ case "${1}" in
         startServer
         ;;
     p:worker)
-        exec /usr/sbin/crond -f -l 0
+        exec php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
         ;;
     p:cron)
-        exec php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
+        exec /usr/sbin/crond -f -l 0
         ;;
     *)
         exec ${@}
