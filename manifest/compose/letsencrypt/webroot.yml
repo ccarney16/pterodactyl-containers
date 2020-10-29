@@ -14,10 +14,6 @@ services:
       panel:
         condition: service_healthy
     image: certbot/certbot:latest
-    labels:
-      ofelia.enabled: "true"
-      ofelia.job-run.le-renew.schedule: "0 0 * * *"
-      ofelia.job-run.le-renew.container: pterodactyl_certbot
     volumes_from:
     - panel
   ##
@@ -28,6 +24,10 @@ services:
     depends_on:
       certbot:
         condition: service_started
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-run.le-renew.schedule: "0 0 * * *"
+      ofelia.job-run.le-renew.container: pterodactyl_certbot
   ##
   # panel
   # Adds labels to the panel container to operate on a restart schedule

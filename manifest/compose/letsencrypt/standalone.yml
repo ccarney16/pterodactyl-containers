@@ -9,10 +9,6 @@ services:
   certbot:
     container_name: pterodactyl_certbot
     image: certbot/certbot:latest
-    labels:
-      ofelia.enabled: "true"
-      ofelia.job-run.le-renew.schedule: "0 0 * * *"
-      ofelia.job-run.le-renew.container: pterodactyl_certbot
     ports:
     - 80:80
     - 443:443
@@ -29,6 +25,10 @@ services:
       certbot:
         condition: service_started
     image: mcuadros/ofelia:latest
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-run.le-renew.schedule: "0 0 * * *"
+      ofelia.job-run.le-renew.container: pterodactyl_certbot
     network_mode: none
     privileged: true
     restart: always
