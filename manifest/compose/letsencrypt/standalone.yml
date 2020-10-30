@@ -27,7 +27,7 @@ services:
     image: mcuadros/ofelia:latest
     labels:
       ofelia.enabled: "true"
-      ofelia.job-run.le-renew.schedule: "0 0 * * *"
+      ofelia.job-run.le-renew.schedule: "0 0 0 * * *"
       ofelia.job-run.le-renew.container: pterodactyl_certbot
     network_mode: none
     privileged: true

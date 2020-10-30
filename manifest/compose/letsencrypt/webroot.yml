@@ -26,7 +26,7 @@ services:
         condition: service_started
     labels:
       ofelia.enabled: "true"
-      ofelia.job-run.le-renew.schedule: "0 0 * * *"
+      ofelia.job-run.le-renew.schedule: "0 0 0 * * *"
       ofelia.job-run.le-renew.container: pterodactyl_certbot
   ##
   # panel
@@ -35,5 +35,5 @@ services:
   panel:
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.panel-reload.schedule: "${PANEL_RELOAD_SCHEDULE:-15 0 * * *}"
+      ofelia.job-exec.panel-reload.schedule: "${PANEL_RELOAD_SCHEDULE:-0 15 0 * * *}"
       ofelia.job-exec.panel-reload.command: "nginx -s reload"
