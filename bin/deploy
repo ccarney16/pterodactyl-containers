@@ -168,7 +168,7 @@ function build_config {
     # Create conf.d/data directory
 
     # Make directory and populate it with base environment files
-    mkdir -p conf.d
+    mkdir -m 700 -p conf.d
     cp -rpnv ./manifest/config/env/* ./conf.d/
 
     # Builds Let's Encrypt Directory and config.
@@ -179,9 +179,9 @@ function build_config {
         # Determines which method Let's Encrypt will use when deploying certificates.
         # This simplifies running the certbot command.
         if [ "$flag_enable_panel" == "x" ]; then
-            cp ./manifest/config/letsencrypt.webroot.ini ./conf.d/letsencrypt/cli.ini
+            cp ./manifest/config/letsencrypt/webroot.ini ./conf.d/letsencrypt/cli.ini
         else 
-            cp ./manifest/config/letsencrypt.standalone.ini ./conf.d/letsencrypt/cli.ini
+            cp ./manifest/config/letsencrypt/standalone.ini ./conf.d/letsencrypt/cli.ini
         fi
     fi
 

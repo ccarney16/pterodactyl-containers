@@ -17,5 +17,5 @@ services:
       ports:
       - ${MYSQL_ADDRESS:-3306}
       restart: always
-      volumes: 
+      volumes:
       - ./data/db:/var/lib/mysql
