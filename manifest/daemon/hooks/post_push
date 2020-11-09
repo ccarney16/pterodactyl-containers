@@ -2,7 +2,7 @@
 
 # Check if git branch is master, if so, we will also tag the container as its release version
 if [ "$SOURCE_BRANCH" == "master" ]; then
-    . $DOCKERFILE_PATH/../version.txt
+    . ../version.txt
     docker tag $IMAGE_NAME $DOCKER_REPO:$DAEMON_VERSION
     docker push $DOCKER_REPO:$DAEMON_VERSION
 fi
