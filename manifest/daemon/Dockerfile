@@ -19,7 +19,7 @@ ARG VERSION
 ENV VERSION=${VERSION}
 
 RUN \
-  apk add --no-cache ca-certificates tini; \
+  apk add --no-cache ca-certificates tini tzdata; \
   mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl 
 
 # Copy wings from build stage
