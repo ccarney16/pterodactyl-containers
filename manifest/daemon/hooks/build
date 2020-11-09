@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Read version file to build panel via version
+. $DOCKERFILE_PATH/../version.txt
+
+docker build --build-arg VERSION=$DAEMON_VERSION -f $DOCKERFILE_PATH -t $IMAGE_NAME .
