@@ -32,7 +32,7 @@ RUN \
     apk add yarn git;
 
 RUN \
-    git clone https://github.com/pterodactyl/panel ./ -b ${GIT_BRANCH} \
+    git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch ${GIT_BRANCH} \
     && rm .git -rf \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \

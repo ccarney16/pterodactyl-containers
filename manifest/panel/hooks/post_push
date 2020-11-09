@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Check if git branch is master, if so, we will also tag the container as its release version
-if [ "$SOURCE_BRANCH" == "master" ]; then
+# If the docker tag is latest, we will also tag it as the release version
+if [ "$DOCKER_TAG" == "latest" ]; then
     . ../version.txt
     docker tag $IMAGE_NAME $DOCKER_REPO:$PANEL_VERSION
     docker push $DOCKER_REPO:$PANEL_VERSION

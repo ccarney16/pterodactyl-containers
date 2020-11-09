@@ -7,7 +7,7 @@ ARG GIT_BRANCH=release/${VERSION}
 RUN \
   apk add git; \
   cd /; \
-  git clone https://github.com/pterodactyl/wings -b ${GIT_BRANCH}; \
+  git clone https://github.com/pterodactyl/wings --depth 1 --branch ${GIT_BRANCH}; \
   cd wings; \
   go build -ldflags="-s -w";
 
