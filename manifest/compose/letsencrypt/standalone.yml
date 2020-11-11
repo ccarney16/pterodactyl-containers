@@ -7,6 +7,7 @@ services:
   # This Config will NOT be used if both the panel and daemon.
   ##
   certbot:
+    command: renew
     container_name: pterodactyl_certbot
     image: certbot/certbot:latest
     ports:
