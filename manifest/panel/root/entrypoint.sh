@@ -5,35 +5,11 @@
 ###
 
 # Prep Container for usage
-function init {
-    # Create the storage/cache directories
-    if [ ! -d /data/storage ]; then
-        mkdir -p /data/storage
-        cat .storage.tmpl | while read line; do
-            mkdir -p "/data/${line}"
-        done
-    fi
-
-    if [ ! -d /data/cache ]; then
-        mkdir -p /data/cache
-    fi
-
-    chown -R nginx:nginx /data/
-
-    # destroy links (or files) and recreate them
-    rm -rf storage
-    ln -s /data/storage storage
-
-    rm -rf bootstrap/cache
-    ln -s /data/cache bootstrap/cache
-
-    rm -rf .env
-    ln -s /data/pterodactyl.conf .env
-
+function initContainer {
     # Check if MySQL is up and running
     echo "Pre-start: Waiting for database connection..."
     i=0
-    until nc -z -v -w30 $DB_HOST $DB_PORT; do
+    until wait-for -t 30 $DB_HOST:$DB_PORT; do
         # wait for 5 seconds before check again
         sleep 5
         i=`expr $i + 1`
@@ -44,12 +20,20 @@ function init {
     done
 }
 
+
 # Runs the initial configuration on every startup
 function startServer {
+    echo ""
+    cat .storage.tmpl | while read line; do
+        mkdir -p "/data/${line}"
+    done
 
-    # Initial setup
+    mkdir -p /data/cache
+
+    # Generate config file if it doesnt exist
     if [ ! -e /data/pterodactyl.conf ]; then
-        echo "Setup: Running first time setup..."
+        echo ""
+        echo "Setup: Generating key..."
 
         # Generate base template
         touch /data/pterodactyl.conf
@@ -63,22 +47,24 @@ function startServer {
         echo "" >> /data/pterodactyl.conf
         echo "APP_KEY=SomeRandomString3232RandomString" >> /data/pterodactyl.conf
 
-        sleep 5
-
-        echo ""
-        echo "Setup: Generating key..."
         sleep 1
         php artisan key:generate --force --no-interaction
 
-        echo ""
-        echo "Setup: Creating & seeding database..."
-        sleep 1
-        php artisan migrate --force
-        php artisan db:seed --force
-
-
-        echo "--Pterodactyl Setup completed!--"
+        echo "--Pterodactyl Key Generated--"
     fi
+
+    chown -R nginx:nginx /data/
+
+    echo ""
+    echo "Clearing cache/views..."
+    
+    php artisan view:clear
+    php artisan config:clear
+
+    echo ""
+    echo "Migrating/Seeding database..."
+
+    php artisan migrate --seed --force
 
     if [ "${SSL}" == "true" ]; then
         envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
@@ -88,7 +74,7 @@ function startServer {
         cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
     fi
 
-   echo "Starting Pterodactyl Panel ${VERSION}..."
+    echo "Starting Pterodactyl Panel ${VERSION}..."
 
     /usr/sbin/php-fpm7 --nodaemonize -c /etc/php7 &
 
@@ -97,12 +83,13 @@ function startServer {
 
 ## Start ##
 
-init
+initContainer
 
 case "${1}" in
     p:start)
         startServer
         ;;
+    # Legacy setup, These will be removed in the near future
     p:worker)
         exec php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
         ;;

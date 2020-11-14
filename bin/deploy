@@ -57,9 +57,14 @@ function build_config {
 
     IFS=" "
 
+    if [ -f docker-compose.yml ]; then
+        rm -rf docker-compose.bak.yml
+        mv docker-compose.yml docker-compose.bak.yml
+    fi
+
     # Build the base config
     # Such a hacky way to do this, but it does appear to be cleaner
-    bin/yq merge -a -x \
+    bin/yq merge -a append -x \
     $( # Enable Panel
         if [ "$flag_enable_panel" == "x" ]; then 
             printf " ./manifest/compose/panel.yml"

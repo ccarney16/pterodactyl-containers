@@ -9,12 +9,6 @@ services:
       cache:
         condition: service_started
     env_file: ./conf.d/panel.env
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 1m
     image: ccarney16/pterodactyl-panel:latest
     ports:
     - 80:80
@@ -32,10 +26,10 @@ services:
   # function correctly.
   ##
   worker:
-    command: p:worker
+    command: wait-for -t 5 panel:80 -- php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
     depends_on:
       panel:
-        condition: service_healthy
+        condition: service_started
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:latest
     labels:
@@ -50,7 +44,7 @@ services:
     command: daemon --docker
     depends_on:
       panel:
-        condition: service_healthy
+        condition: service_started
       worker:
         condition: service_started
     image: mcuadros/ofelia:latest
