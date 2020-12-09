@@ -20,8 +20,9 @@ flag_stdout="docker-compose.yml"
 
 # Daemon Configuration
 config_daemon_dir=""
-config_daemon_docker_socket=""
-config_daemon_docker_root=""
+
+config_docker_socket=""
+config_docker_root=""
 
 # Database Configuration
 config_database_ip_address=""
@@ -43,8 +44,8 @@ function _return_help {
     echo " --build                  - enables build options"
     echo ""
     echo " --daemon-dir             - configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
-    echo " --daemon-docker-socket   - where the daemon contacts docker (ex. /var/run/docker.sock)"
-    echo " --daemon-docker-root     - where the daemon reads docker (ex. /var/lib/docker)"
+    echo " --docker-socket          - where the daemon contacts docker (ex. /var/run/docker.sock)"
+    echo " --docker-root            - where the daemon reads docker (ex. /var/lib/docker)"
 	echo ""
     echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
     echo ""
@@ -142,22 +143,6 @@ function build_config {
                 echo "DAEMON_DATA_DIRECTORY=$config_daemon_dir" >> .env
             fi
         fi
-
-        if [ ! $config_daemon_docker_root == "" ]; then
-            if grep -q "DAEMON_DOCKER_ROOT=" .env; then
-                sed -i "s|DAEMON_DOCKER_ROOT=.*|DAEMON_DOCKER_ROOT=$config_daemon_docker_root|" .env
-            else
-                echo "DAEMON_DOCKER_ROOT=$config_daemon_docker_root" >> .env
-            fi
-        fi
-
-        if [ ! $config_daemon_docker_socket == "" ]; then
-            if grep -q "DAEMON_DOCKER_SOCKET=" .env; then
-                sed -i "s|DAEMON_DOCKER_SOCKET=.*|DAEMON_DOCKER_SOCKET=$config_daemon_docker_socket|" .env
-            else
-                echo "DAEMON_DOCKER_SOCKET=$config_daemon_docker_socket" >> .env
-            fi
-        fi
     fi
 
     if [ "$flag_enable_db" == "x" ]; then
@@ -167,6 +152,23 @@ function build_config {
             else
                 echo "MYSQL_ADDRESS=$config_database_ip_address:3306" >> .env
             fi
+        fi
+    fi
+
+
+    if [ ! $config_docker_root == "" ]; then
+        if grep -q "DOCKER_ROOT=" .env; then
+            sed -i "s|DOCKER_ROOT=.*|DOCKER_ROOT=$config_daemon_docker_root|" .env
+        else
+            echo "DOCKER_ROOT=$config_docker_root" >> .env
+        fi
+    fi
+
+    if [ ! $config_docker_socket == "" ]; then
+        if grep -q "DOCKER_SOCKET=" .env; then
+            sed -i "s|DOCKER_SOCKET=.*|DOCKER_SOCKET=$config_docker_socket|" .env
+        else
+            echo "DOCKER_SOCKET=$config_docker_socket" >> .env
         fi
     fi
 
@@ -231,13 +233,13 @@ for ((i=1; i<=$#; i++)); do
                 ((i++))
                 config_daemon_dir="${!i}"
                 ;;
-            --daemon-docker-socket)
+            --docker-socket)
                 ((i++))
-                config_daemon_docker_socket="${!i}"
+                config_docker_socket="${!i}"
                 ;;
-            --daemon-docker-root)
+            --docker-root)
                 ((i++))
-                config_daemon_docker_root="${!i}"
+                config_docker_root="${!i}"
                 ;;
             --db-address) # Allows Database to be bound to a port;
                 ((i++))
