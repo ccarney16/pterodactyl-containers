@@ -92,18 +92,11 @@ function build_config {
             else
                 printf " ./manifest/compose/letsencrypt/standalone.yml"
             fi
-
-            if [ "$flag_enable_daemon" == "x" ]; then
-                printf " ./manifest/compose/letsencrypt/daemon.dep.yml"
-            fi
         fi
     ) \
     $( # Enable Database
         if [ "$flag_enable_db" == "x" ]; then 
             printf " ./manifest/compose/database/database.yml"
-            if [ "$flag_enable_panel" == "x" ]; then
-                printf " ./manifest/compose/database/panel.dep.yml"
-            fi
         fi ) \
     | bin/yq read --stripComments - > $flag_stdout
 

@@ -25,6 +25,8 @@ services:
     depends_on:
       certbot:
         condition: service_started
+      daemon:
+        condition: service_started
     image: mcuadros/ofelia:latest
     labels:
       ofelia.enabled: "true"
@@ -35,3 +37,12 @@ services:
     restart: always
     volumes:
     - ${DOCKER_SOCKET:-/var/run/docker.sock}:${DOCKER_SOCKET:-/var/run/docker.sock}
+  ##
+  # daemon
+  # Applies cron labels to the daemon container
+  ##
+  daemon:
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.daemon-reload.schedule: "${DAEMON_RELOAD_SCHEDULE:-0 30 0 * * *}"
+      ofelia.job-exec.daemon-reload.command: "kill -15 1"
