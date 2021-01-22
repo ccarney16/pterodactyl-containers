@@ -1,0 +1,80 @@
+name: Update Wings Image
+
+on: # When to run this workflow
+    push: # When you edit this repo
+        branches: [master]
+    schedule:
+      - cron: "0 0 * * *" # Everyday at 00:00 UTC
+    # watch:
+    #     types: [started] # When you star the repo
+
+env:
+    DAEMON_PROJECT_NAME: pterodactyl-daemon # Dockerhub project
+
+jobs:
+    get_versions:
+        name: Get Versions
+        runs-on: ubuntu-latest
+        outputs:
+            current_wings_version: ${{ steps.wings_docker_version.outputs.version }}
+            latest_wings_version: ${{ steps.latest_versions.outputs.wings_version }}
+        steps:
+          - name: Latest Ptero Versions
+            id: latest_versions
+            run: |
+                echo "::set-output name=wings_version::v$(curl -s "https://cdn.pterodactyl.io/releases/latest.json" | jq -r '.wings')"
+                echo -n "Latest Daemon Version: v"
+                curl -s "https://cdn.pterodactyl.io/releases/latest.json" | jq -r '.wings'
+                
+          - name: Get Wings Docker version
+            uses: luoqiz/docker-images-latest-version@master
+            id: wings_docker_version
+            with:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}
+
+    build_push_wings:
+        name: Build and Push Wings Container
+        runs-on: ubuntu-latest
+        needs: get_versions
+        if: needs.get_versions.outputs.latest_wings_version != needs.get_versions.outputs.current_wings_version
+        steps:
+          - name: Setup repo
+            uses: actions/checkout@v2
+        
+          - name: Set up QEMU
+            uses: docker/setup-qemu-action@v1
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v1
+
+          - name: Login to DockerHub
+            uses: docker/login-action@v1
+            with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+          - name: Build and Push
+            uses: docker/build-push-action@v2
+            with:
+                context: ./manifest/daemon
+                file: ./manifest/daemon/Dockerfile
+                platforms: linux/amd64,linux/arm64
+                push: true
+                build-args: VERSION=${{ needs.get_versions.outputs.latest_wings_version }}
+                tags: |
+                    "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:latest"
+                    "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:${{ needs.get_versions.outputs.latest_wings_version }}"
+
+    update-version-txt:
+        name: Update version.txt
+        runs-on: ubuntu-latest
+        needs: get_versions
+        if: needs.get_versions.outputs.latest_wings_version != needs.get_versions.outputs.current_wings_version
+        steps:
+            - uses: actions/checkout@v2
+            - run: |
+                git config user.name github-actions
+                git config user.email github-actions@github.com
+                sed -e "s/DAEMON_VERSION=.*$/DAEMON_VERSION=${{ needs.get_versions.outputs.latest_wings_version }}/g" ./manifest/version.txt
+                git commit -a -m "Bump Daemon Version to ${{ needs.get_versions.outputs.latest_wings_version }} from ${{ needs.get_versions.outputs.current_wings_version }}"
+                git push

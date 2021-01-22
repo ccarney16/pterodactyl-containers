@@ -1,0 +1,79 @@
+name: Update Panel Image
+
+on: # When to run this workflow
+    push: # When you edit this repo
+        branches: [master]
+    schedule:
+      - cron: "0 0 * * *" # Everyday at 00:00 UTC
+    # watch:
+    #     types: [started] # When you star the repo
+env:
+    PANEL_PROJECT_NAME: pterodactyl-panel # Dockerhub project
+
+jobs:
+    get_versions:
+        name: Get Versions
+        runs-on: ubuntu-latest
+        outputs:
+            current_panel_version: ${{ steps.panel_docker_version.outputs.version }}
+            latest_panel_version: ${{ steps.latest_versions.outputs.panel_version }}
+        steps:
+          - name: Latest Ptero Versions
+            id: latest_versions
+            run: |
+                echo "::set-output name=panel_version::v$(curl -s "https://cdn.pterodactyl.io/releases/latest.json" | jq -r '.panel')"
+                echo -n "Latest Panel Version: v"
+                curl -s "https://cdn.pterodactyl.io/releases/latest.json" | jq -r '.panel'
+                
+          - name: Get Panel Docker version
+            uses: luoqiz/docker-images-latest-version@master
+            id: panel_docker_version
+            with:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PANEL_PROJECT_NAME }}
+
+    build_push_panel:
+        name: Build and Push Panel Container
+        runs-on: ubuntu-latest
+        needs: get_versions
+        if: needs.get_versions.outputs.latest_panel_version != needs.get_versions.outputs.current_panel_version
+        steps:
+          - name: Setup repo
+            uses: actions/checkout@v2
+        
+          - name: Set up QEMU
+            uses: docker/setup-qemu-action@v1
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v1
+
+          - name: Login to DockerHub
+            uses: docker/login-action@v1
+            with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+          - name: Build and push
+            uses: docker/build-push-action@v2
+            with:
+                context: ./manifest/panel
+                file: ./manifest/panel/Dockerfile
+                platforms: linux/amd64,linux/arm64
+                build-args: VERSION=${{ needs.get_versions.outputs.latest_panel_version }}
+                push: true
+                tags: |
+                    "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PANEL_PROJECT_NAME }}:latest"
+                    "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PANEL_PROJECT_NAME }}:${{ needs.get_versions.outputs.latest_panel_version }}"
+
+    update-version-txt:
+        name: Update version.txt
+        runs-on: ubuntu-latest
+        needs: get_versions
+        if: needs.get_versions.outputs.latest_panel_version != needs.get_versions.outputs.current_panel_version
+        steps:
+            - uses: actions/checkout@v2
+            - run: |
+                git config user.name github-actions
+                git config user.email github-actions@github.com
+                sed -e "s/PANEL_VERSION=.*$/PANEL_VERSION=${{ needs.get_versions.outputs.latest_panel_version }}/g" ./manifest/version.txt
+                git commit -a -m "Bump Panel Version to ${{ needs.get_versions.outputs.latest_panel_version }} from ${{ needs.get_versions.outputs.current_panel_version }}"
+                git push
