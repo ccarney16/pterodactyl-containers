@@ -8,7 +8,7 @@
 ## VARIABLES
 
 # Toggle Flags
-missing_flags="yes"
+missing_flags="yes" # If this is toggled as yes, then the user did not input any services and will default to enabling them all
 flag_enable_panel=""
 flag_enable_daemon=""
 flag_enable_db=""
@@ -16,16 +16,21 @@ flag_enable_le=""
 flag_enable_build=""
 
 # Allows configuring where the output can be put out to.
-flag_stdout="docker-compose.yml"
+stdout="docker-compose.yml" # if stdout is toggled, this will change to /dev/stdout, outputting to console.
+
+# yq rules, allows more flexibility to add/remove configurations.
+compose_ruleset=()
 
 # Daemon Configuration
 config_daemon_dir=""
 
+# Docker configuration
 config_docker_socket=""
 config_docker_root=""
 
 # Database Configuration
 config_database_ip_address=""
+
 # Functions
 
 # Returns the help message
@@ -54,137 +59,26 @@ function _return_help {
 }
 
 function build_config {
-    >&2 echo "Building Configuration..."
 
-    IFS=" "
+}
 
-    if [ -f docker-compose.yml ]; then
-        rm -rf docker-compose.bak.yml
-        mv docker-compose.yml docker-compose.bak.yml
-    fi
+# Build's the docker compose file from manifest and runs ruleset file.
+function build_compose {
 
-    # Build the base config
-    # Such a hacky way to do this, but it does appear to be cleaner
-    bin/yq merge -a append -x \
-    $( # Enable Panel
-        if [ "$flag_enable_panel" == "x" ]; then 
-            printf " ./manifest/compose/panel.yml"
+}
 
-            # Optional Panel Services and Parameters
-            if [ "$flag_enable_build" == "x" ]; then
-                printf " ./manifest/compose/build/panel.yml"
-            fi
-
-        fi ) \
-    $( # Enable Daemon
-        if [ "$flag_enable_daemon" == "x" ]; then 
-            printf " ./manifest/compose/daemon.yml"
-
-            # Optional Daemon Services and Parameters
-            if [ "$flag_enable_build" == "x" ]; then
-                printf " ./manifest/compose/build/daemon.yml"
-            fi
-        fi ) \
-    $( # Enable Let's Encrypt
-        if [ "$flag_enable_le" == "x" ]; then
-            if [ "$flag_enable_panel" == "x" ]; then
-                printf " ./manifest/compose/letsencrypt/webroot.yml"
-            else
-                printf " ./manifest/compose/letsencrypt/standalone.yml"
-            fi
-        fi
-    ) \
-    $( # Enable Database
-        if [ "$flag_enable_db" == "x" ]; then 
-            printf " ./manifest/compose/database/database.yml"
-        fi ) \
-    | bin/yq read --stripComments - > $flag_stdout
-
-
-    # Build .env Configuration
-
+# Initializes/prepares the project environment
+function prepare_project {
     # Create .env file if it does not exist.
     if ! [ -f .env ]; then
         echo "## Project configuration file ##" > .env
         echo "# DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING!" >> .env
-        echo "" >> .env
-    fi
-
-    if [ "$flag_enable_panel" == "x" ]; then
-        if [ "$flag_enable_build" == "x" ]; then
-            if grep -q "PANEL_VERSION=" .env; then
-                sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
-            else
-                grep "PANEL_VERSION=" manifest/version.txt >> .env
-            fi
-        fi
-    fi
-
-    if [ "$flag_enable_daemon" == "x" ]; then
-        if [ "$flag_enable_build" == "x" ]; then
-            if grep -q "DAEMON_VERSION=" .env; then
-                sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
-            else
-                grep "DAEMON_VERSION=" manifest/version.txt >> .env
-            fi
-        fi
-
-        if [ ! $config_daemon_dir == "" ]; then
-            if grep -q "DAEMON_DATA_DIRECTORY=" .env; then
-                sed -i "s|DAEMON_DATA_DIRECTORY=.*|DAEMON_DATA_DIRECTORY=${config_daemon_dir}|" .env
-            else
-                echo "DAEMON_DATA_DIRECTORY=$config_daemon_dir" >> .env
-            fi
-        fi
-    fi
-
-    if [ "$flag_enable_db" == "x" ]; then
-        if [ ! $config_database_ip_address == "" ]; then
-            if grep -q "MYSQL_ADDRESS=" .env; then
-                sed -i "s|MYSQL_ADDRESS=.*|MYSQL_ADDRESS=$config_database_ip_address:3306|" .env
-            else
-                echo "MYSQL_ADDRESS=$config_database_ip_address:3306" >> .env
-            fi
-        fi
-    fi
-
-
-    if [ ! $config_docker_root == "" ]; then
-        if grep -q "DOCKER_ROOT=" .env; then
-            sed -i "s|DOCKER_ROOT=.*|DOCKER_ROOT=$config_daemon_docker_root|" .env
-        else
-            echo "DOCKER_ROOT=$config_docker_root" >> .env
-        fi
-    fi
-
-    if [ ! $config_docker_socket == "" ]; then
-        if grep -q "DOCKER_SOCKET=" .env; then
-            sed -i "s|DOCKER_SOCKET=.*|DOCKER_SOCKET=$config_docker_socket|" .env
-        else
-            echo "DOCKER_SOCKET=$config_docker_socket" >> .env
-        fi
+        echo "COMPOSE_PROJECT_NAME=pterodactyl" >> .env
     fi
 
     # Create conf.d/data directory
-
-    # Make directory and populate it with base environment files
-    mkdir -m 700 -p conf.d
+    mkdir -m 700 -p conf.d data
     cp -rpnv ./manifest/config/env/* ./conf.d/
-
-    # Builds Let's Encrypt Directory and config.
-    if [ "$flag_enable_le" == "x" ]; then
-        mkdir -p ./conf.d/letsencrypt
-        rm -f ./conf.d/letsencrypt/cli.ini
-
-        # Determines which method Let's Encrypt will use when deploying certificates.
-        # This simplifies running the certbot command.
-        if [ "$flag_enable_panel" == "x" ]; then
-            cp ./manifest/config/letsencrypt/webroot.ini ./conf.d/letsencrypt/cli.ini
-        else 
-            cp ./manifest/config/letsencrypt/standalone.ini ./conf.d/letsencrypt/cli.ini
-        fi
-    fi
-
 }
 
 # Fixing some nonsense with function returning
@@ -237,6 +131,13 @@ for ((i=1; i<=$#; i++)); do
             --db-address) # Allows Database to be bound to a port;
                 ((i++))
                 config_database_ip_address="${!i}"
+                ;;
+            --rule)
+                ((i++))
+                ruleset+=("${!i}")
+                ;;
+            --stdout)
+                stdout="/dev/stdout"
                 ;;
         esac
     else

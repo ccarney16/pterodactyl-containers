@@ -1,0 +1,39 @@
+#@ load("@ytt:data", "data")
+
+#@ def daemon_service():
+daemon:
+  #@ if/end data.values.docker.build == True:
+  build:
+    args:
+      VERSION: ${DAEMON_VERSION}
+    context: ./manifest/images/daemon
+  environment:
+  - TZ=${DAEMON_TIMEZONE:-UTC}
+  image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+  ports:
+  #@yaml/text-templated-strings
+  - (@= data.values.daemon.network.ip_addr @):(@= str(data.values.daemon.network.ports.sftp) @):(@= str(data.values.daemon.network.ports.sftp) @)
+  #@yaml/text-templated-strings
+  - (@= data.values.daemon.network.ip_addr @):(@= str(data.values.daemon.network.ports.http) @):(@= str(data.values.daemon.network.ports.http) @)
+  privileged: true
+  restart: always
+  volumes:
+  - ./conf.d/daemon:/etc/pterodactyl
+  - ./conf.d/letsencrypt:/etc/letsencrypt:ro
+  - ./conf.d/certs:/etc/certs:ro
+
+  #@yaml/text-templated-strings
+  - (@= data.values.daemon.volumes.root @):(@= data.values.daemon.volumes.root @)
+  #@yaml/text-templated-strings
+  - (@= data.values.daemon.volumes.volumes @):(@= data.values.daemon.volumes.volumes @)
+  #@yaml/text-templated-strings
+  - (@= data.values.daemon.volumes.backup @):(@= data.values.daemon.volumes.backup @)
+  #@yaml/text-templated-strings
+  - (@= data.values.docker.root @):(@= data.values.docker.root @)
+  #@yaml/text-templated-strings
+  - (@= data.values.docker.socket @):(@= data.values.docker.socket @)
+
+  - /tmp/pterodactyl/:/tmp/pterodactyl/
+  #@yaml/text-templated-strings
+  working_dir: (@= data.values.daemon.volumes.root @)
+#@ end

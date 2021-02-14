@@ -1,0 +1,44 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:template", "template")
+
+#@ def panel_service():
+  panel:
+    #@ if/end data.values.docker.build:
+    build:
+      args:
+        VERSION: ${PANEL_VERSION}
+      context: ./manifest/images/panel
+    depends_on:
+      cache:
+        condition: service_started
+    env_file: ./conf.d/panel.env
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    #@ if/end data.values.panel.network.expose:
+    ports:
+    #@yaml/text-templated-strings
+    - (@= data.values.panel.network.ip_addr @):(@= str(data.values.panel.network.ports.http) @):80
+    #@yaml/text-templated-strings
+    - (@= data.values.panel.network.ip_addr @):(@= str(data.values.panel.network.ports.https) @):443
+    restart: always
+    volumes:
+    - ./conf.d/letsencrypt:/etc/letsencrypt
+    - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
+    - ./conf.d/certs:/etc/certs
+    - ./data/panel:/data
+  worker:
+    command: wait-for -t 5 panel:80 -- php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
+    depends_on:
+      panel:
+        condition: service_started
+    env_file: ./conf.d/panel.env
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    restart: always
+    volumes_from:
+    - panel
+  cache:
+    cpu_count: 2
+    cpu_percent: 50
+    image: redis:alpine
+    mem_limit: 128m
+    restart: always
+#@ end

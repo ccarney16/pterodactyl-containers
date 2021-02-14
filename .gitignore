@@ -1,12 +1,11 @@
-.bak/
+# Application Data
 conf.d/
 data/
+
+# Deployment Data
 .env
 docker-compose.yml
 docker-compose.*.yml
 
-# Allow users to create custom dockerfiles and add user content.
-manifest/panel/user
-manifest/panel/Dockerfile.user
-manifest/daemon/user
-manifest/panel/Dockerfile.user
+# User Override Data
+./override.d

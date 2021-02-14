@@ -1,0 +1,58 @@
+#@data/values
+---
+#! Service Toggle
+services:
+  panel: true
+  daemon: true
+  letsencrypt: true
+  database: true
+#! Panel Options  
+panel:
+  domain: panel.example.com
+  ssl:
+    cert: null
+    key: null
+  network:
+    expose: true
+    ip_addr: 0.0.0.0
+    ports:
+      http: 80
+      https: 443
+#! Daemon Options
+daemon:
+  network:
+    expose: true
+    ip_addr: 0.0.0.0
+    ports:
+      sftp: 2022
+      http: 8088
+  volumes:
+    root: /var/lib/pterodactyl
+    backup: /var/lib/pterodactyl/archive
+    volumes: /var/lib/pterodactyl/volumes
+#! Database Options
+database:
+  schema: pterodactyl
+  auth:
+    root_password: apassword
+    user_name: pterodactyl
+    user_password: pterodbpass
+  network:
+    expose: false
+    ip_addr: 0.0.0.0
+    ports:
+      db: 3306
+#! Let's Encrypt Options
+letsencrypt:
+  domains:
+  - panel.example.com
+  - node.example.com
+  email: admin@example.com
+#! Docker Options
+#! This is used by multiple services.
+docker:
+  build: false
+  root: /var/lib/docker
+  socket: /var/run/docker.sock
+  project:
+    name: pterodactyl

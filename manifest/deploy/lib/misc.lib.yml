@@ -1,0 +1,54 @@
+#@ load("@ytt:data", "data")
+
+#! Misc Services provided for deployment. 
+
+#! == MariaDB ==
+#! Provides a database for the panel.
+#! Optionally can be exposed to provide 
+#! a basic database for game servers.
+#!
+#@ def database_service():
+mariadb:
+  image: mariadb:10.4
+  env_file: ./conf.d/mariadb.env
+  #@ if/end data.values.database.network.expose:
+  ports:
+  #@yaml/text-templated-strings
+  - (@= data.values.database.network.ip_addr @):(@= str(data.values.database.network.ports.db) @):3306
+  restart: always
+  volumes:
+  - ./data/db:/var/lib/mysql
+#@ end
+
+#! == Job Scheduler ==
+#!
+#! This service uses ofelia, which allows
+#! jobs to be executed within docker. 
+#!
+#@ def cron_service():
+cron:
+  command: daemon --config=/etc/jobs/jobs.ini
+  image: mcuadros/ofelia:latest
+  network_mode: none
+  privileged: true
+  restart: always
+  volumes:
+  - ./conf.d/jobs:/etc/jobs:ro
+  #@yaml/text-templated-strings
+  - (@= data.values.docker.socket @):(@= data.values.docker.socket @)
+#@ end
+
+#! == Let's Encrypt Certbot ==
+#!
+#!
+#@ def certbot_service():
+certbot:
+  command: renew
+  image: certbot/certbot:latest
+  #@ if/end data.values.panel.service == False:
+  ports:
+  - 80:80
+  - 443:443
+  volumes:
+  - ./conf.d/letsencrypt:/etc/letsencrypt
+#@ end
