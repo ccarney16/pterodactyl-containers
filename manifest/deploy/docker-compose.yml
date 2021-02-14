@@ -1,0 +1,23 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:template", "template")
+
+#! Load pterodactyl yaml libraries
+
+#@ load("lib/func.lib.star", "service_check", "require_cron")
+#@ load("lib/panel.lib.yml", "panel_service")
+#@ load("lib/daemon.lib.yml", "daemon_service")
+#@ load("lib/misc.lib.yml", "database_service", "cron_service")
+ 
+#! Checks to ensure required services are enabled
+#@ service_check()
+
+version: '3.8'
+services:
+  #@ if/end data.values.services.panel:
+  _: #@ template.replace(panel_service())
+  #@ if/end data.values.services.daemon:
+  _: #@ template.replace(daemon_service())
+  #@ if/end data.values.services.database:
+  _: #@ template.replace(database_service())
+  #@ if/end require_cron():
+  _: #@ template.replace(cron_service())

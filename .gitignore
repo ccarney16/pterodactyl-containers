@@ -4,8 +4,8 @@ data/
 
 # Deployment Data
 .env
-docker-compose.yml
-docker-compose.*.yml
+/docker-compose.yml
+/docker-compose.*.yml
 
 # User Override Data
 ./override.d
