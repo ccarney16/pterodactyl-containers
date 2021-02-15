@@ -1,11 +1,11 @@
 # Application Data
-conf.d/
-data/
+/conf.d/
+/data/
 
 # Deployment Data
-.env
+/.env
 /docker-compose.yml
 /docker-compose.*.yml
 
 # User Override Data
-./override.d
+/override.d/
