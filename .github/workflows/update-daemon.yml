@@ -1,6 +1,7 @@
 name: Update Wings Image
 
 on: # When to run this workflow
+    workflow_dispatch:
     push: # When you edit this repo
         branches: [master]
     schedule:
