@@ -60,7 +60,7 @@ jobs:
       with:
         owner: ${{ github.repository_owner }}
         repo: pterodactyl-containers
-        github_token: ${{ WORKFLOW_TOKEN }}
+        github_token: ${{ secrets.WORKFLOW_TOKEN }}
         workflow_file_name: update-daemon.yml
         ref: master
         trigger_workflow: true
@@ -77,7 +77,7 @@ jobs:
       with:
         owner: ${{ github.repository_owner }}
         repo: pterodactyl-containers
-        github_token: ${{ WORKFLOW_TOKEN }}
+        github_token: ${{ secrets.WORKFLOW_TOKEN }}
         workflow_file_name: update-panel.yml
         ref: master
         trigger_workflow: true
