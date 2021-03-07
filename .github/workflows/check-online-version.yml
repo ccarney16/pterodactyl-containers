@@ -59,7 +59,7 @@ jobs:
     - uses: convictional/trigger-workflow-and-wait@v1.3.0
       with:
         owner: ${{ github.repository_owner }}
-        repo: ${{ github.repository }}
+        repo: pterodactyl-containers
         github_token: ${{ github.token }}
         workflow_file_name: update-daemon.yml
         trigger_workflow: true
@@ -75,7 +75,7 @@ jobs:
     - uses: convictional/trigger-workflow-and-wait@v1.3.0
       with:
         owner: ${{ github.repository_owner }}
-        repo: ${{ github.repository }}
+        repo: pterodactyl-containers
         github_token: ${{ github.token }}
         workflow_file_name: update-panel.yml
         trigger_workflow: true
