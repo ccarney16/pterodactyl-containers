@@ -48,3 +48,35 @@ jobs:
         echo -e "PANEL_VERSION=${{ needs.get_versions.outputs.latest_panel_version }}\nDAEMON_VERSION=${{ needs.get_versions.outputs.latest_daemon_version }}" > ./manifest/version.txt
         git commit -a -m "updated version.txt."
         git push
+  
+  request_daemon_build:
+    name: Request Daemon Build
+    runs-on: ubuntu-latest
+    needs:
+    - get_versions
+    - update-version-txt
+    steps:
+    - uses: convictional/trigger-workflow-and-wait@v1.3.0
+      with:
+        owner: ${{ github.repository_owner }}
+        repo: ${{ github.repository }}
+        github_token: ${{ github.token }}
+        workflow_filename: update-daemon.yml
+        trigger_workflow: true
+        wait_workflow: false
+
+  request_panel_build:
+    name: Request Panel Build
+    runs-on: ubuntu-latest
+    needs:
+    - get_versions
+    - update-version-txt
+    steps:
+    - uses: convictional/trigger-workflow-and-wait@v1.3.0
+      with:
+        owner: ${{ github.repository_owner }}
+        repo: ${{ github.repository }}
+        github_token: ${{ github.token }}
+        workflow_filename: update-panel.yml
+        trigger_workflow: true
+        wait_workflow: false

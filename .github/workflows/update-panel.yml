@@ -1,8 +1,7 @@
 name: Update Panel Image
 
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
 env:
     PANEL_PROJECT_NAME: pterodactyl-panel # Dockerhub project
 jobs:

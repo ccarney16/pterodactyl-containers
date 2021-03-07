@@ -1,8 +1,7 @@
 name: Update Wings Image
 
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
 env:
     DAEMON_PROJECT_NAME: pterodactyl-daemon
 jobs:
