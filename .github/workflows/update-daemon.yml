@@ -37,7 +37,7 @@ jobs:
         file: ./manifest/daemon/Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
-        build-args: VERSION=${{ read_version.outputs.version }}
+        build-args: VERSION=${{ steps.read_version.outputs.version }}
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:latest"
-          "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:${{ read_version.outputs.version }}"
+          "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:${{ steps.read_version.outputs.version }}"
