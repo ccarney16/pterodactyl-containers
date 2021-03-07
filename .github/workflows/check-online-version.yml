@@ -45,6 +45,6 @@ jobs:
     - run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
-        echo -e "PANEL_VERSION=${{ needs.get_versions.outputs.latest_panel_version }}\nDAEMON_VERSION={{ needs.get_versions.outputs.latest_wings_version }}" ./manifest/version.txt
+        echo -e "PANEL_VERSION=${{ needs.get_versions.outputs.latest_panel_version }}\nDAEMON_VERSION=${{ needs.get_versions.outputs.latest_wings_version }}" > ./manifest/version.txt
         git commit -a -m "updated version.txt."
         git push
