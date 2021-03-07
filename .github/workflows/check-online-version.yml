@@ -1,0 +1,51 @@
+name: "Check Online Version"
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "0 0 * * *"
+env:
+  PANEL_PROJECT_NAME: pterodactyl-panel # Dockerhub project
+  DAEMON_PROJECT_NAME: pterodactyl-daemon
+jobs:
+  get_versions:
+    name: Get Versions
+    runs-on: ubuntu-latest
+    outputs:
+        current_panel_version: ${{ steps.panel_docker_version.outputs.version }}
+        current_daemon_version: ${{ steps.daemon_docker_version.outputs.version }}
+        latest_panel_version: ${{ steps.latest_versions.outputs.panel_version }}
+        latest_daemon_version: ${{ steps.latest_versions.outputs.daemon_version}}
+    steps:
+    - name: Get Current Release
+      id: latest_versions
+      run: |
+        latest_info="$(curl -s "https://cdn.pterodactyl.io/releases/latest.json")"
+        echo "::set-output name=panel_version::v$(echo $latest_info | jq -r '.panel')"
+        echo "::set-output name=daemon_version::v$(echo $latest_info | jq -r '.wings')"
+                
+    - name: Get Panel Docker version
+      uses: luoqiz/docker-images-latest-version@master
+      id: panel_docker_version
+      with:
+        image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PANEL_PROJECT_NAME }}
+
+    - name: Get Daemon Docker version
+      uses: luoqiz/docker-images-latest-version@master
+      id: daemon_docker_version
+      with:
+        image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}
+
+    - name: Commit New Versions
+  update-version-txt:
+    name: Update version.txt
+    runs-on: ubuntu-latest
+    needs: get_versions
+    if: needs.get_versions.outputs.latest_panel_version != needs.get_versions.outputs.current_panel_version || needs.get_versions.outputs.latest_daemon_version != needs.get_versions.outputs.current_daemon_version
+    steps:
+    - uses: actions/checkout@v2
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        echo -e "PANEL_VERSION=${{ needs.get_versions.outputs.latest_panel_version }}\nDAEMON_VERSION={{ needs.get_versions.outputs.latest_wings_version }}" ./manifest/version.txt
+        git commit -a -m "updated version.txt."
+        git push
