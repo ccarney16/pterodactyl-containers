@@ -61,7 +61,7 @@ jobs:
         owner: ${{ github.repository_owner }}
         repo: ${{ github.repository }}
         github_token: ${{ github.token }}
-        workflow_filename: update-daemon.yml
+        workflow_file_name: update-daemon.yml
         trigger_workflow: true
         wait_workflow: false
 
@@ -77,6 +77,6 @@ jobs:
         owner: ${{ github.repository_owner }}
         repo: ${{ github.repository }}
         github_token: ${{ github.token }}
-        workflow_filename: update-panel.yml
+        workflow_file_name: update-panel.yml
         trigger_workflow: true
         wait_workflow: false
