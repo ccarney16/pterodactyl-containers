@@ -39,5 +39,5 @@ jobs:
         push: true
         build-args: VERSION=${{ steps.read_version.outputs.version }}
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:latest"
+          "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:latest"
           "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DAEMON_PROJECT_NAME }}:${{ steps.read_version.outputs.version }}"
