@@ -87,13 +87,11 @@ function startServer {
         if ! kill -0 "$php_service_pid" 2>/dev/null; then
             echo "[php] service is no longer running! exiting..."
             sleep 5
-            wait "$php_service_pid";
             exit 1
         fi
         if ! kill -0 "$nginx_service_pid" 2>/dev/null; then
             echo "[nginx] service is no longer running! exiting..."
             sleep 5
-            wait "$nginx_service_pid"; 
             exit 2
         fi
         sleep 1
