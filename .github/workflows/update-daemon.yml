@@ -32,8 +32,8 @@ jobs:
     - name: Build and Push
       uses: docker/build-push-action@v2
       with:
-        context: ./manifest/daemon
-        file: ./manifest/daemon/Dockerfile
+        context: ./manifest/images/daemon
+        file: ./manifest/images/daemon/Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
         build-args: VERSION=${{ steps.read_version.outputs.version }}

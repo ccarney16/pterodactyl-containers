@@ -7,19 +7,20 @@
 # Prep Container for usage
 function initContainer {
     # Check if MySQL is up and running
-    echo "Pre-start: Waiting for database connection..."
+    echo "[init] Waiting for database connection..."
     i=0
-    until wait-for -t 30 $DB_HOST:$DB_PORT; do
+    until wait-for -q -t 15 $DB_HOST:$DB_PORT; do
+        echo "[init] Database connection timeout"
+
         # wait for 5 seconds before check again
         sleep 5
         i=`expr $i + 1`
         if [ "$i" = "5" ]; then
-            echo "Pre-start: Database Connection Timeout (Is MySQL Running?)"
-            exit
+            echo "[init] Connection threshold reached, unable to contact MySQL (Is MySQL Running?)"
+            exit 3
         fi
     done
 }
-
 
 # Runs the initial configuration on every startup
 function startServer {
@@ -28,12 +29,10 @@ function startServer {
         mkdir -p "/data/${line}"
     done
 
-    mkdir -p /data/cache
-
     # Generate config file if it doesnt exist
     if [ ! -e /data/pterodactyl.conf ]; then
         echo ""
-        echo "Setup: Generating key..."
+        echo "[setup] Generating Application Key..."
 
         # Generate base template
         touch /data/pterodactyl.conf
@@ -50,35 +49,53 @@ function startServer {
         sleep 1
         php artisan key:generate --force --no-interaction
 
-        echo "--Pterodactyl Key Generated--"
+        echo "[setup] Application Key Generated"
     fi
-
-    chown -R nginx:nginx /data/
-
     echo ""
-    echo "Clearing cache/views..."
+    echo "[setup] Clearing cache/views..."
     
     php artisan view:clear
     php artisan config:clear
 
     echo ""
-    echo "Migrating/Seeding database..."
+    echo "[setup] Migrating/Seeding database..."
 
     php artisan migrate --seed --force
 
-    if [ "${SSL}" == "true" ]; then
+    # Restore /data directory ownership to nginx.
+    chown -R nginx:nginx /data/
+    
+    # Checks if SSL certificate and key exists, otherwise default to http traffic
+    if [ -f "${SSL_CERT}" ] && [ -f "${SSL_CERT_KEY}" ]; then
         envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
         < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
     else
-        echo "Warning: Disabling HTTPS"
+        echo "[setup] Warning: SSL Certificate was not specified or doesnt exist, using HTTP."
         cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
     fi
 
-    echo "Starting Pterodactyl Panel ${VERSION}..."
+    echo "--- Starting Pterodactyl Panel: ${VERSION} ---"
 
-    /usr/sbin/php-fpm7 --nodaemonize -c /etc/php7 &
+    # Run these as jobs and monitor their pid status
+    /usr/sbin/php-fpm7 --nodaemonize -c /etc/php7 & php_service_pid=$!
+    /usr/sbin/nginx -g "daemon off;" & nginx_service_pid=$!
 
-    exec /usr/sbin/nginx -g "daemon off;"
+    # Monitor Child Processes
+    while ( true ); do
+        if ! kill -0 "$php_service_pid" 2>/dev/null; then
+            echo "[php] service is no longer running! exiting..."
+            sleep 5
+            wait "$php_service_pid";
+            exit 1
+        fi
+        if ! kill -0 "$nginx_service_pid" 2>/dev/null; then
+            echo "[nginx] service is no longer running! exiting..."
+            sleep 5
+            wait "$nginx_service_pid"; 
+            exit 2
+        fi
+        sleep 1
+    done;
 }
 
 ## Start ##
@@ -89,7 +106,6 @@ case "${1}" in
     p:start)
         startServer
         ;;
-    # Legacy setup, These will be removed in the near future
     p:worker)
         exec php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
         ;;

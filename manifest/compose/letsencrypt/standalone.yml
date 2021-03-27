@@ -8,7 +8,6 @@ services:
   ##
   certbot:
     command: renew
-    container_name: pterodactyl_certbot
     image: certbot/certbot:latest
     ports:
     - 80:80
@@ -29,7 +28,7 @@ services:
     labels:
       ofelia.enabled: "true"
       ofelia.job-run.le-renew.schedule: "0 0 0 * * *"
-      ofelia.job-run.le-renew.container: pterodactyl_certbot
+      ofelia.job-run.le-renew.container: pterodactyl_certbot_1
     network_mode: none
     privileged: true
     restart: always

@@ -9,6 +9,6 @@ services:
     build:
       args:
         VERSION: ${PANEL_VERSION}
-      context: ./manifest/panel
+      context: ./manifest/images/panel
   worker:
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}

@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# If the docker tag is latest, we will also tag it as the release version
-if [ "$DOCKER_TAG" == "latest" ]; then
-    . ../version.txt
-    docker tag $IMAGE_NAME $DOCKER_REPO:$PANEL_VERSION
-    docker push $DOCKER_REPO:$PANEL_VERSION
-fi

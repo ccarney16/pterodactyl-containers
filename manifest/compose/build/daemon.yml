@@ -5,4 +5,4 @@ services:
     build:
       args:
         VERSION: ${DAEMON_VERSION}
-      context: ./manifest/daemon
+      context: ./manifest/images/daemon

@@ -9,7 +9,6 @@ services:
   ##
   certbot:
     command: renew
-    container_name: pterodactyl_certbot
     depends_on:
       panel:
         condition: service_started
@@ -27,7 +26,7 @@ services:
     labels:
       ofelia.enabled: "true"
       ofelia.job-run.le-renew.schedule: "0 0 0 * * *"
-      ofelia.job-run.le-renew.container: pterodactyl_certbot
+      ofelia.job-run.le-renew.container: pterodactyl_certbot_1
   ##
   # panel
   # Adds labels to the panel container to operate on a restart schedule

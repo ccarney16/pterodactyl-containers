@@ -40,7 +40,7 @@ RUN \
     rm -rf node_modules;
 
 # Remove persistent data folders as they will be symlinked further down
-RUN rm .env ./storage ./bootstrap/cache -rf
+RUN rm .env ./storage -rf
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
@@ -58,7 +58,6 @@ COPY ./root/ /
 # Symlink storage, config and cache to /data
 RUN \
     ln -s /data/storage storage; \
-    ln -s /data/cache bootstrap/cache; \
     ln -s /data/pterodactyl.conf .env;
 
 EXPOSE 80 443
