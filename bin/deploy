@@ -53,6 +53,11 @@ function _return_help {
     echo ""
 }
 
+function yq {
+    local yq_version="3"
+    docker run --rm -i -v "${PWD}":/workdir mikefarah/yq:$yq_version "$@"
+}
+
 function build_config {
     >&2 echo "Building Configuration..."
 
@@ -65,7 +70,7 @@ function build_config {
 
     # Build the base config
     # Such a hacky way to do this, but it does appear to be cleaner
-    bin/yq merge -a append -x \
+    yq merge -a append -x \
     $( # Enable Panel
         if [ "$flag_enable_panel" == "x" ]; then 
             printf " ./manifest/compose/panel.yml"
@@ -105,7 +110,7 @@ function build_config {
                 printf " ./manifest/compose/database/panel.dep.yml"
             fi
         fi ) \
-    | bin/yq read --stripComments - > $flag_stdout
+    | yq read --stripComments - > $flag_stdout
 
 
     # Build .env Configuration
