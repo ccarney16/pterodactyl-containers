@@ -15,7 +15,6 @@ services:
       restart: always
       volumes:
       - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
-      - ${DOCKER_ROOT:-/var/lib/docker}:${DOCKER_ROOT:-/var/lib/docker}
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:${DOCKER_SOCKET:-/var/run/docker.sock}
 
       - /tmp/pterodactyl/:/tmp/pterodactyl/

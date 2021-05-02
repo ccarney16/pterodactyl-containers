@@ -22,7 +22,6 @@ flag_stdout="docker-compose.yml"
 config_daemon_dir=""
 
 config_docker_socket=""
-config_docker_root=""
 
 # Database Configuration
 config_database_ip_address=""
@@ -45,7 +44,6 @@ function _return_help {
     echo ""
     echo " --daemon-dir             - configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
     echo " --docker-socket          - where the daemon contacts docker (ex. /var/run/docker.sock)"
-    echo " --docker-root            - where the daemon reads docker (ex. /var/lib/docker)"
 	echo ""
     echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
     echo ""
@@ -155,15 +153,6 @@ function build_config {
         fi
     fi
 
-
-    if [ ! $config_docker_root == "" ]; then
-        if grep -q "DOCKER_ROOT=" .env; then
-            sed -i "s|DOCKER_ROOT=.*|DOCKER_ROOT=$config_daemon_docker_root|" .env
-        else
-            echo "DOCKER_ROOT=$config_docker_root" >> .env
-        fi
-    fi
-
     if [ ! $config_docker_socket == "" ]; then
         if grep -q "DOCKER_SOCKET=" .env; then
             sed -i "s|DOCKER_SOCKET=.*|DOCKER_SOCKET=$config_docker_socket|" .env
@@ -236,10 +225,6 @@ for ((i=1; i<=$#; i++)); do
             --docker-socket)
                 ((i++))
                 config_docker_socket="${!i}"
-                ;;
-            --docker-root)
-                ((i++))
-                config_docker_root="${!i}"
                 ;;
             --db-address) # Allows Database to be bound to a port;
                 ((i++))
