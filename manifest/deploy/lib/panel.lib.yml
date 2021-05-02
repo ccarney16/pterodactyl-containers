@@ -9,8 +9,8 @@
         VERSION: ${PANEL_VERSION}
       context: ./manifest/images/panel
     depends_on:
-      cache:
-        condition: service_started
+    - mariadb
+    - redis
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     #@ if/end data.values.panel.network.expose:
@@ -28,14 +28,23 @@
   worker:
     command: wait-for -t 5 panel:80 -- php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
     depends_on:
-      panel:
-        condition: service_started
+    - panel
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     restart: always
     volumes_from:
     - panel
-  cache:
+  mariadb:
+    image: mariadb:10.4
+    env_file: ./conf.d/mariadb.env
+    #@ if/end data.values.panel.database.network.expose:
+    ports:
+    #@yaml/text-templated-strings
+    - (@= data.values.panel.database.network.ip_addr @):(@= str(data.values.panel.database.network.ports.db) @):3306
+    restart: always
+    volumes:
+    - ./data/db:/var/lib/mysql
+  redis:
     cpu_count: 2
     cpu_percent: 50
     image: redis:alpine

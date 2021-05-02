@@ -29,8 +29,6 @@ function startServer {
         mkdir -p "/data/${line}"
     done
 
-    mkdir -p /data/cache
-
     # Generate config file if it doesnt exist
     if [ ! -e /data/pterodactyl.conf ]; then
         echo ""
@@ -68,7 +66,7 @@ function startServer {
     chown -R nginx:nginx /data/
     
     # Checks if SSL certificate and key exists, otherwise default to http traffic
-    if [ -f "${SSL_CERT}" && -f "${SSL_CERT_KEY}" ]; then
+    if [ -f "${SSL_CERT}" ] && [ -f "${SSL_CERT_KEY}" ]; then
         envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
         < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
     else
@@ -87,11 +85,13 @@ function startServer {
         if ! kill -0 "$php_service_pid" 2>/dev/null; then
             echo "[php] service is no longer running! exiting..."
             sleep 5
+            wait "$php_service_pid";
             exit 1
         fi
         if ! kill -0 "$nginx_service_pid" 2>/dev/null; then
             echo "[nginx] service is no longer running! exiting..."
             sleep 5
+            wait "$nginx_service_pid"; 
             exit 2
         fi
         sleep 1

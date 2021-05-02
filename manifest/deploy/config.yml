@@ -1,17 +1,23 @@
 #@data/values
 ---
-#! Service Toggle
-services:
-  panel: true
-  daemon: true
-  letsencrypt: true
-  database: true
 #! Panel Options  
 panel:
-  domain: panel.example.com
+  enabled: true
+  database: 
+    schema: pterodactyl
+    auth:
+      user_name: pterodactyl
+      user_password: pterodbpass
+    network:
+      expose: false
+      ip_addr: 0.0.0.0
+      ports:
+        db: 3306
+  domain: pterodactyl.example.com
+  #! This can be manually set or be configured via let's encrypt
   ssl:
-    cert: null
-    key: null
+    cert: /etc/certs/cert.pem
+    key: /etc/certs/cert.key
   network:
     expose: true
     ip_addr: 0.0.0.0
@@ -20,6 +26,7 @@ panel:
       https: 443
 #! Daemon Options
 daemon:
+  enabled: true
   network:
     expose: true
     ip_addr: 0.0.0.0
@@ -30,29 +37,16 @@ daemon:
     root: /var/lib/pterodactyl
     backup: /var/lib/pterodactyl/archive
     volumes: /var/lib/pterodactyl/volumes
-#! Database Options
-database:
-  schema: pterodactyl
-  auth:
-    root_password: apassword
-    user_name: pterodactyl
-    user_password: pterodbpass
-  network:
-    expose: false
-    ip_addr: 0.0.0.0
-    ports:
-      db: 3306
 #! Let's Encrypt Options
 letsencrypt:
-  domains:
-  - panel.example.com
-  - node.example.com
+  enabled: true
+  certificates:
+  - pterodactyl.example.com
   email: admin@example.com
 #! Docker Options
 #! This is used by multiple services.
 docker:
   build: false
-  root: /var/lib/docker
   socket: /var/run/docker.sock
-  project:
-    name: pterodactyl
+  compose:
+    project_name: pterodactyl

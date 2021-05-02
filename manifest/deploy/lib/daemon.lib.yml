@@ -2,11 +2,13 @@
 
 #@ def daemon_service():
 daemon:
+  #! Optional build settings can be enabled
   #@ if/end data.values.docker.build == True:
   build:
     args:
       VERSION: ${DAEMON_VERSION}
     context: ./manifest/images/daemon
+
   environment:
   - TZ=${DAEMON_TIMEZONE:-UTC}
   image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
@@ -28,8 +30,6 @@ daemon:
   - (@= data.values.daemon.volumes.volumes @):(@= data.values.daemon.volumes.volumes @)
   #@yaml/text-templated-strings
   - (@= data.values.daemon.volumes.backup @):(@= data.values.daemon.volumes.backup @)
-  #@yaml/text-templated-strings
-  - (@= data.values.docker.root @):(@= data.values.docker.root @)
   #@yaml/text-templated-strings
   - (@= data.values.docker.socket @):(@= data.values.docker.socket @)
 

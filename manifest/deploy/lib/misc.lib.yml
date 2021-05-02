@@ -2,24 +2,6 @@
 
 #! Misc Services provided for deployment. 
 
-#! == MariaDB ==
-#! Provides a database for the panel.
-#! Optionally can be exposed to provide 
-#! a basic database for game servers.
-#!
-#@ def database_service():
-mariadb:
-  image: mariadb:10.4
-  env_file: ./conf.d/mariadb.env
-  #@ if/end data.values.database.network.expose:
-  ports:
-  #@yaml/text-templated-strings
-  - (@= data.values.database.network.ip_addr @):(@= str(data.values.database.network.ports.db) @):3306
-  restart: always
-  volumes:
-  - ./data/db:/var/lib/mysql
-#@ end
-
 #! == Job Scheduler ==
 #!
 #! This service uses ofelia, which allows
@@ -45,7 +27,7 @@ cron:
 certbot:
   command: renew
   image: certbot/certbot:latest
-  #@ if/end data.values.panel.service == False:
+  #@ if/end data.values.panel.enabled == False:
   ports:
   - 80:80
   - 443:443

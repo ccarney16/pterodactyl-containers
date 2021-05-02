@@ -7,29 +7,6 @@
 
 ## VARIABLES
 
-# Toggle Flags
-missing_flags="yes" # If this is toggled as yes, then the user did not input any services and will default to enabling them all
-flag_enable_panel=""
-flag_enable_daemon=""
-flag_enable_db=""
-flag_enable_le=""
-flag_enable_build=""
-
-# Allows configuring where the output can be put out to.
-stdout="docker-compose.yml" # if stdout is toggled, this will change to /dev/stdout, outputting to console.
-
-# yq rules, allows more flexibility to add/remove configurations.
-compose_ruleset=()
-
-# Daemon Configuration
-config_daemon_dir=""
-
-# Docker configuration
-config_docker_socket=""
-config_docker_root=""
-
-# Database Configuration
-config_database_ip_address=""
 
 # Functions
 
@@ -42,20 +19,15 @@ function _return_help {
 	echo "Options:"
 	echo ""
 	echo " --help  , -h             - returns this screen"
-    echo " --panel                  - adds panel [*]"
-    echo " --daemon                 - adds daemon [*]"
-    echo " --database               - adds mysql database"
-    echo " --letsencrypt            - adds letsencrypt"
-    echo " --build                  - enables build options"
-    echo ""
-    echo " --daemon-dir             - configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
-    echo " --docker-socket          - where the daemon contacts docker (ex. /var/run/docker.sock)"
-    echo " --docker-root            - where the daemon reads docker (ex. /var/lib/docker)"
-	echo ""
-    echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
+    echo " --config-only            - deploys the config only and do not execute any containers"
     echo ""
     echo " [*] When building a custom docker-compose file, you must specify either the panel or daemon to build"
     echo ""
+}
+
+# We need to see if dependencies exist on this system, otherwise prompt where the user can download them
+function _find_dependencies {
+    which ytt
 }
 
 function build_config {
@@ -69,16 +41,7 @@ function build_compose {
 
 # Initializes/prepares the project environment
 function prepare_project {
-    # Create .env file if it does not exist.
-    if ! [ -f .env ]; then
-        echo "## Project configuration file ##" > .env
-        echo "# DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING!" >> .env
-        echo "COMPOSE_PROJECT_NAME=pterodactyl" >> .env
-    fi
 
-    # Create conf.d/data directory
-    mkdir -m 700 -p conf.d data
-    cp -rpnv ./manifest/config/env/* ./conf.d/
 }
 
 # Fixing some nonsense with function returning
@@ -95,46 +58,7 @@ for ((i=1; i<=$#; i++)); do
                 _return_help
                 exit
                 ;;
-            # Enable Services
-            --daemon) # Enables wings
-                flag_enable_daemon="x"
-                missing_flags="no"
-                ;;
-            --panel) # Enables panel
-                flag_enable_panel="x"
-                missing_flags="no"
-                ;;
-            --database) # Enables Database
-                flag_enable_db="x"
-                missing_flags="no"
-                ;;
-            --letsencrypt) # Enable Let's Encrypt
-                flag_enable_le="x"
-                missing_flags="no"
-                ;;
-            --build)
-                flag_enable_build="x"
-                ;;
-            # Modify Certain runtime options
-            --daemon-dir)
-                ((i++))
-                config_daemon_dir="${!i}"
-                ;;
-            --docker-socket)
-                ((i++))
-                config_docker_socket="${!i}"
-                ;;
-            --docker-root)
-                ((i++))
-                config_docker_root="${!i}"
-                ;;
-            --db-address) # Allows Database to be bound to a port;
-                ((i++))
-                config_database_ip_address="${!i}"
-                ;;
-            --rule)
-                ((i++))
-                ruleset+=("${!i}")
+            --config-only)
                 ;;
             --stdout)
                 stdout="/dev/stdout"
@@ -144,18 +68,6 @@ for ((i=1; i<=$#; i++)); do
         _command+=("${!i}")
     fi
 done
-
-if [ $missing_flags == "yes" ]; then
-    flag_enable_panel="x"
-    flag_enable_daemon="x"
-    flag_enable_db="x"
-    flag_enable_le="x"
-fi
-
-if [ "$flag_enable_panel" = "" ] && [ "$flag_enable_daemon" = "" ]; then
-    echo "Error! Missing --panel and or --daemon flag! You must specify at least one when building a custom compose file."
-    exit
-fi
 
 
 build_config
