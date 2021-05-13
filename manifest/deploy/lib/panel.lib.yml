@@ -12,7 +12,8 @@
     - mariadb
     - redis
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    #@yaml/text-templated-strings
+    image: (@= data.values.panel.image @)
     #@ if/end data.values.panel.network.expose:
     ports:
     #@yaml/text-templated-strings
@@ -21,33 +22,30 @@
     - (@= data.values.panel.network.ip_addr @):(@= str(data.values.panel.network.ports.https) @):443
     restart: always
     volumes:
-    - ./conf.d/letsencrypt:/etc/letsencrypt
-    - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
     - ./conf.d/certs:/etc/certs
+    - ./data/letsencrypt:/etc/letsencrypt
+    - ./data/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
     - ./data/panel:/data
   worker:
     command: wait-for -t 5 panel:80 -- php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
     depends_on:
     - panel
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    #@yaml/text-templated-strings
+    image: (@= data.values.panel.image @):${PANEL_VERSION:-latest}
     restart: always
     volumes_from:
     - panel
   mariadb:
-    image: mariadb:10.4
+    image: docker.io/mariadb:10.4
     env_file: ./conf.d/mariadb.env
-    #@ if/end data.values.panel.database.network.expose:
-    ports:
-    #@yaml/text-templated-strings
-    - (@= data.values.panel.database.network.ip_addr @):(@= str(data.values.panel.database.network.ports.db) @):3306
     restart: always
     volumes:
-    - ./data/db:/var/lib/mysql
+    - ./data/mariadb:/var/lib/mysql
   redis:
     cpu_count: 2
     cpu_percent: 50
-    image: redis:alpine
+    image: docker.io/redis:alpine
     mem_limit: 128m
     restart: always
 #@ end

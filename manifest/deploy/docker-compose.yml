@@ -1,15 +1,24 @@
+#@ load("@ytt:assert", "assert")
 #@ load("@ytt:data", "data")
 #@ load("@ytt:template", "template")
+#@ load("@ytt:struct", "struct")
 
 #! Load pterodactyl yaml libraries
 
-#@ load("lib/func.lib.star", "service_check", "require_cron")
+#@ load("lib/func.lib.star", "require_cron")
 #@ load("lib/panel.lib.yml", "panel_service")
 #@ load("lib/daemon.lib.yml", "daemon_service")
 #@ load("lib/misc.lib.yml", "cron_service")
- 
-#! Checks to ensure required services are enabled
-#@ service_check()
+
+#! Determine if panel/daemon were both disabled, fail if so
+#@ not (not data.values.panel.enabled and not data.values.daemon.enabled) or assert.fail("Both Panel and Daemon services were disabled, one must be enabled when configuring this deployment")
+
+#! Print Let's Encrypt ToS if letsencrypt.agree_tos is set to true
+#@ if data.values.letsencrypt.agree_tos:
+#@ print("\nWarning! By toggling \"letsencrypt.agree_tos\", you agree to use services provided by Let's Encrypt.")
+#@ print("This project including certbot is not affiliated by certbot or Let's Encrypt.")
+#@ print("For more information, visit https://letsencrypt.org/repository/ for more information.\n")
+#@ end
 
 version: '3.8'
 services:

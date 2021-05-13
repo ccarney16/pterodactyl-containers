@@ -1,52 +1,46 @@
 #@data/values
 ---
-#! Panel Options  
+#! Panel Options
 panel:
   enabled: true
+  image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
   database: 
     schema: pterodactyl
     auth:
-      user_name: pterodactyl
-      user_password: pterodbpass
-    network:
-      expose: false
-      ip_addr: 0.0.0.0
-      ports:
-        db: 3306
-  domain: pterodactyl.example.com
-  #! This can be manually set or be configured via let's encrypt
-  ssl:
-    cert: /etc/certs/cert.pem
-    key: /etc/certs/cert.key
+      username: pterodactyl
+      password: null
+    root_password: null
+  domain: null
   network:
     expose: true
     ip_addr: 0.0.0.0
     ports:
       http: 80
       https: 443
+  #! This can be manually set or be configured via let's encrypt
+  ssl:
+    cert: /etc/certs/cert.pem
+    key: /etc/certs/cert.key
 #! Daemon Options
 daemon:
   enabled: true
+  image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
   network:
     expose: true
     ip_addr: 0.0.0.0
     ports:
       sftp: 2022
-      http: 8088
+      http: 8080
   volumes:
     root: /var/lib/pterodactyl
     backup: /var/lib/pterodactyl/archive
     volumes: /var/lib/pterodactyl/volumes
 #! Let's Encrypt Options
 letsencrypt:
-  enabled: true
-  certificates:
-  - pterodactyl.example.com
-  email: admin@example.com
+  email: null
+  agree_tos: false
 #! Docker Options
 #! This is used by multiple services.
 docker:
   build: false
   socket: /var/run/docker.sock
-  compose:
-    project_name: pterodactyl

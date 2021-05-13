@@ -8,10 +8,8 @@ daemon:
     args:
       VERSION: ${DAEMON_VERSION}
     context: ./manifest/images/daemon
-
-  environment:
-  - TZ=${DAEMON_TIMEZONE:-UTC}
-  image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+  #@yaml/text-templated-strings
+  image: (@= data.values.daemon.image @)
   ports:
   #@yaml/text-templated-strings
   - (@= data.values.daemon.network.ip_addr @):(@= str(data.values.daemon.network.ports.sftp) @):(@= str(data.values.daemon.network.ports.sftp) @)
@@ -21,9 +19,8 @@ daemon:
   restart: always
   volumes:
   - ./conf.d/daemon:/etc/pterodactyl
-  - ./conf.d/letsencrypt:/etc/letsencrypt:ro
   - ./conf.d/certs:/etc/certs:ro
-
+  - ./data/letsencrypt:/etc/letsencrypt:ro
   #@yaml/text-templated-strings
   - (@= data.values.daemon.volumes.root @):(@= data.values.daemon.volumes.root @)
   #@yaml/text-templated-strings

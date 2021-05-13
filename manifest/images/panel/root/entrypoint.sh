@@ -4,7 +4,7 @@
 # /entrypoint.sh - Manages the startup of pterodactyl panel
 ###
 
-# Prep Container for usage
+# Prep Container for usage, to bypass pre-init stage, set entrypoint to 'sh'.
 function initContainer {
     # Check if MySQL is up and running
     echo "[init] Waiting for database connection..."
@@ -24,7 +24,7 @@ function initContainer {
 
 # Runs the initial configuration on every startup
 function startServer {
-    echo ""
+    # Rebuild the storage directory within /data
     cat .storage.tmpl | while read line; do
         mkdir -p "/data/${line}"
     done

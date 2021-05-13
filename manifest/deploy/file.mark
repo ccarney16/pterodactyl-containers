@@ -1,4 +1,0 @@
-.env:type=text-plain
-./conf.d/*.env:type=text-template
-./conf.d/jobs/jobs.ini:type=text-template
-./conf.d/letsencrypt/cli.ini:type=text-template

@@ -10,14 +10,14 @@
 #@ def cron_service():
 cron:
   command: daemon --config=/etc/jobs/jobs.ini
-  image: mcuadros/ofelia:latest
+  image: docker.io/mcuadros/ofelia:latest
   network_mode: none
   privileged: true
   restart: always
   volumes:
-  - ./conf.d/jobs:/etc/jobs:ro
+  - ./data/cron:/etc/jobs:ro
   #@yaml/text-templated-strings
-  - (@= data.values.docker.socket @):(@= data.values.docker.socket @)
+  - (@= data.values.docker.socket @):/var/run/docker.sock
 #@ end
 
 #! == Let's Encrypt Certbot ==
@@ -26,11 +26,11 @@ cron:
 #@ def certbot_service():
 certbot:
   command: renew
-  image: certbot/certbot:latest
+  image: docker.io/certbot/certbot:latest
   #@ if/end data.values.panel.enabled == False:
   ports:
   - 80:80
   - 443:443
   volumes:
-  - ./conf.d/letsencrypt:/etc/letsencrypt
+  - ./data/letsencrypt:/etc/letsencrypt
 #@ end
