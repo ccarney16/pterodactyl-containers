@@ -7,7 +7,7 @@ RUN \
     php7-fpm php7-gd php7-memcached php7-mbstring php7-openssl php7-pdo php7-phar php7-json \
     php7-pdo_mysql php7-session php7-simplexml php7-tokenizer php7-ctype php7-zlib php7-zip php7-xmlwriter \
     tini \
-    && mkdir -p /var/www/html /run/nginx
+    && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
