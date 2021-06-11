@@ -6,7 +6,6 @@ on:
 env:
   PANEL_PROJECT_NAME: pterodactyl-panel # Dockerhub project
   DAEMON_PROJECT_NAME: pterodactyl-daemon
-  REPO_NAME: pterodactyl-containers
 jobs:
   get_versions:
     name: Get Versions
@@ -57,10 +56,13 @@ jobs:
     - get_versions
     - update-version-txt
     steps:
+    - run: echo "::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
+      id: repo-name
+      shell: bash
     - uses: convictional/trigger-workflow-and-wait@v1.3.0
       with:
         owner: ${{ github.repository_owner }}
-        repo: ${{ env.REPO_NAME }}
+        repo: ${{ steps.repo-name.outputs.REPOSITORY_NAME }}
         github_token: ${{ secrets.WORKFLOW_TOKEN }}
         workflow_file_name: update-daemon.yml
         ref: master
@@ -74,10 +76,13 @@ jobs:
     - get_versions
     - update-version-txt
     steps:
+    - run: echo "::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
+      id: repo-name
+      shell: bash
     - uses: convictional/trigger-workflow-and-wait@v1.3.0
       with:
         owner: ${{ github.repository_owner }}
-        repo: ${{ env.REPO_NAME }}
+        repo: ${{ steps.repo-name.outputs.REPOSITORY_NAME }}
         github_token: ${{ secrets.WORKFLOW_TOKEN }}
         workflow_file_name: update-panel.yml
         ref: master
