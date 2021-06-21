@@ -22,7 +22,7 @@ jobs:
         latest_info="$(curl -s "https://cdn.pterodactyl.io/releases/latest.json")"
         echo "::set-output name=panel_version::v$(echo $latest_info | jq -r '.panel')"
         echo "::set-output name=daemon_version::v$(echo $latest_info | jq -r '.wings')"
-                
+          
     - name: Get Panel Docker version
       uses: luoqiz/docker-images-latest-version@master
       id: panel_docker_version
@@ -56,13 +56,13 @@ jobs:
     - get_versions
     - update-version-txt
     steps:
-    - run: echo "::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
+    - run: echo "name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")" >> $GITHUB_ENV
       id: repo-name
       shell: bash
     - uses: convictional/trigger-workflow-and-wait@v1.3.0
       with:
         owner: ${{ github.repository_owner }}
-        repo: ${{ steps.repo-name.outputs.REPOSITORY_NAME }}
+        repo: ${{ env.REPOSITORY_NAME }}
         github_token: ${{ secrets.WORKFLOW_TOKEN }}
         workflow_file_name: update-daemon.yml
         ref: master
@@ -76,13 +76,13 @@ jobs:
     - get_versions
     - update-version-txt
     steps:
-    - run: echo "::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
+    - run: echo "name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")" >> $GITHUB_ENV
       id: repo-name
       shell: bash
     - uses: convictional/trigger-workflow-and-wait@v1.3.0
       with:
         owner: ${{ github.repository_owner }}
-        repo: ${{ steps.repo-name.outputs.REPOSITORY_NAME }}
+        repo: ${{ env.REPOSITORY_NAME }}
         github_token: ${{ secrets.WORKFLOW_TOKEN }}
         workflow_file_name: update-panel.yml
         ref: master
