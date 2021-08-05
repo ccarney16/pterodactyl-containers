@@ -21,23 +21,23 @@ ENV VERSION=${VERSION}
 WORKDIR /var/www/html
 
 RUN \
-    apk add yarn git;
+    apk add yarn git
 
 RUN \
-    git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch ${GIT_BRANCH}; \
-    rm .git -rf; \
-    chmod -R 755 storage/* bootstrap/cache; \
-    find storage -type d > .storage.tmpl; \
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
-    cp .env.example .env; \
-    composer install --ansi --no-dev --optimize-autoloader; \
-    chown -R nginx:nginx *;
+    git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch ${GIT_BRANCH} &&  \
+    rm .git -rf &&  \
+    chmod -R 755 storage/* bootstrap/cache &&  \
+    find storage -type d > .storage.tmpl &&  \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer &&  \
+    cp .env.example .env &&  \
+    composer install --ansi --no-dev --optimize-autoloader &&  \
+    chown -R nginx:nginx *
 
 RUN \
-    yarn install --production; \
-    yarn add cross-env; \
-    yarn run build:production; \
-    rm -rf node_modules;
+    yarn install --production &&  \
+    yarn add cross-env &&  \
+    yarn run build:production &&  \
+    rm -rf node_modules
 
 # Remove persistent data folders as they will be symlinked further down
 RUN rm .env ./storage -rf
@@ -57,8 +57,8 @@ COPY ./root/ /
 
 # Symlink storage, config and cache to /data
 RUN \
-    ln -s /data/storage storage; \
-    ln -s /data/pterodactyl.conf .env;
+    ln -s /data/storage storage &&  \
+    ln -s /data/pterodactyl.conf .env
 
 EXPOSE 80 443
 VOLUME [ "/data" ]
