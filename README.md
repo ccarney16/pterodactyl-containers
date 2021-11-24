@@ -18,7 +18,7 @@ All issues regarding Pterodactyl Panel/Node are to be reported to https://github
 
 [https://pterodactyl.io/](https://pterodactyl.io/)
 
-[https://docs.pterodactyl.io/](https://docs.pterodactyl.io/)
+[https://pterodactyl.io/project/introduction.html](https://docs.pterodactyl.io/)
 
 [https://github.com/Pterodactyl/](https://github.com/Pterodactyl/)
 
