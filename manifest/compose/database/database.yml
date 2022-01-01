@@ -12,7 +12,7 @@ services:
     # Stores Server/User information
     ##
     mysql:
-      image: mariadb:10.4
+      image: docker.io/library/mariadb:10.5
       env_file: ./conf.d/mariadb.env
       ports:
       - ${MYSQL_ADDRESS:-3306}

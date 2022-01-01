@@ -5,10 +5,10 @@
 version: '2.3'
 services:
   panel:
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     build:
       args:
         VERSION: ${PANEL_VERSION}
       context: ./manifest/images/panel
   worker:
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}

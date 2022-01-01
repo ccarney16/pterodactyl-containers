@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   daemon:
-    image: ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+    image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
     build:
       args:
         VERSION: ${DAEMON_VERSION}

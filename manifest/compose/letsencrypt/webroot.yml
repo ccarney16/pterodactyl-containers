@@ -12,7 +12,7 @@ services:
     depends_on:
       panel:
         condition: service_started
-    image: certbot/certbot:latest
+    image: docker.io/certbot/certbot:latest
     volumes_from:
     - panel
   ##

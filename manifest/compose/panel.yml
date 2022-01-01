@@ -9,7 +9,7 @@ services:
       cache:
         condition: service_started
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:latest
+    image: docker.io/ccarney16/pterodactyl-panel:latest
     ports:
     - 80:80
     - 443:443
@@ -31,7 +31,7 @@ services:
       panel:
         condition: service_started
     env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:latest
+    image: docker.io/ccarney16/pterodactyl-panel:latest
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.pqueue.schedule: "@every 1m"
@@ -47,7 +47,7 @@ services:
         condition: service_started
       worker:
         condition: service_started
-    image: mcuadros/ofelia:latest
+    image: docker.io/mcuadros/ofelia:latest
     network_mode: none
     privileged: true
     restart: always
@@ -60,6 +60,6 @@ services:
   cache:
     cpu_count: 2
     cpu_percent: 50
-    image: redis:alpine
+    image: docker.io/library/redis:alpine
     mem_limit: 128m
     restart: always
