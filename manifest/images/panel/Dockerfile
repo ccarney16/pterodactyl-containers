@@ -1,4 +1,4 @@
-FROM alpine:edge as base
+FROM alpine:3.15 as base
 
 LABEL MAINTAINER="Cameron Carney <ccarney16@live.com>"
 
