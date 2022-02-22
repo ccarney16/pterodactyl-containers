@@ -1,4 +1,4 @@
-version: '2.3'
+version: '3.4'
 services:
   ##
   # --Pterodactyl Panel--
@@ -13,7 +13,7 @@ services:
     ports:
     - 80:80
     - 443:443
-    restart: always
+    restart: on-failure
     volumes:
     - ./data/panel:/data
     # Enable Let's Encrypt Support

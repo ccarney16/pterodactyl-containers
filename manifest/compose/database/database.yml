@@ -4,7 +4,7 @@
 # This compose file provides the required dependencies for 
 # Pterodactyl, such as MariaDB and Redis.
 ##
-version: '2.3'
+version: '3.4'
 services:
     ##
     # --MariaDB--
@@ -12,10 +12,14 @@ services:
     # Stores Server/User information
     ##
     mysql:
-      image: docker.io/library/mariadb:10.6
-      env_file: ./conf.d/mariadb.env
-      ports:
+    image: docker.io/library/mariadb:10.6
+    env_file: ./configs/mariadb.env
+    ports:
       - ${MYSQL_ADDRESS:-3306}
-      restart: always
-      volumes:
+    restart: on-failure
+    volumes:
       - ./data/db:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      timeout: 20s
+      retries: 5
