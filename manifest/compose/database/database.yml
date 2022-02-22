@@ -13,7 +13,7 @@ services:
     ##
     mysql:
     image: docker.io/library/mariadb:10.6
-    env_file: ./configs/mariadb.env
+    env_file: ./conf.d/mariadb.env
     ports:
       - ${MYSQL_ADDRESS:-3306}
     restart: on-failure
