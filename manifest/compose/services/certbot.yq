@@ -1,0 +1,4 @@
+.services += load("services/certbot.yml")
+| with(select(env(panel_enabled) == "true");
+    del(.services.certbot.ports)
+)

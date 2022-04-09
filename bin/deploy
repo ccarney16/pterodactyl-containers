@@ -9,22 +9,16 @@
 
 # Toggle Flags
 missing_flags="yes"
-flag_enable_panel=""
-flag_enable_daemon=""
-flag_enable_db=""
-flag_enable_le=""
-flag_enable_build=""
-
-# Allows configuring where the output can be put out to.
-flag_stdout="docker-compose.yml"
+panel_enabled=""
+daemon_enabled=""
+certbot_enabled=""
+exclude_database="false"
+dev_build="false"
 
 # Daemon Configuration
 config_daemon_dir=""
-
 config_docker_socket=""
 
-# Database Configuration
-config_database_ip_address=""
 # Functions
 
 # Returns the help message
@@ -36,18 +30,16 @@ function _return_help {
 	echo "Options:"
 	echo ""
 	echo " --help  , -h             - returns this screen"
-    echo " --panel                  - adds panel [*]"
-    echo " --daemon                 - adds daemon [*]"
-    echo " --database               - adds mysql database"
-    echo " --letsencrypt            - adds letsencrypt"
-    echo " --build                  - enables build options"
+    echo " --panel                  - Adds panel (*)"
+    echo " --daemon                 - Adds daemon (*)"
+    echo " --certbot                - Adds letsencrypt certbot"
+    echo " --build                  - Enables build options"
     echo ""
-    echo " --daemon-dir             - configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
-    echo " --docker-socket          - where the daemon contacts docker (ex. /var/run/docker.sock)"
-	echo ""
-    echo " --db-address             - configures the database address (ex. 127.0.0.1:3306)"
+    echo " --daemon-dir []          - Configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
+    echo " --docker-socket []       - Where the daemon contacts docker (ex. /var/run/docker.sock)"
+    echo " --no-panel-db            - Do not deploy with provided database services."
     echo ""
-    echo " [*] When building a custom docker-compose file, you must specify either the panel or daemon to build"
+    echo " (*) When building a custom docker-compose file, you must specify either the panel or daemon to build"
     echo ""
 }
 
@@ -61,50 +53,11 @@ function build_config {
         mv docker-compose.yml docker-compose.bak.yml
     fi
 
-    # Build the base config
-    # Such a hacky way to do this, but it does appear to be cleaner
-    bin/yq merge -a append -x \
-    $( # Enable Panel
-        if [ "$flag_enable_panel" == "x" ]; then 
-            printf " ./manifest/compose/panel.yml"
+    export panel_enabled daemon_enabled certbot_enabled exclude_database dev_build
 
-            # Optional Panel Services and Parameters
-            if [ "$flag_enable_build" == "x" ]; then
-                printf " ./manifest/compose/build/panel.yml"
-            fi
-
-        fi ) \
-    $( # Enable Daemon
-        if [ "$flag_enable_daemon" == "x" ]; then 
-            printf " ./manifest/compose/daemon.yml"
-
-            # Optional Daemon Services and Parameters
-            if [ "$flag_enable_build" == "x" ]; then
-                printf " ./manifest/compose/build/daemon.yml"
-            fi
-        fi ) \
-    $( # Enable Let's Encrypt
-        if [ "$flag_enable_le" == "x" ]; then
-            if [ "$flag_enable_panel" == "x" ]; then
-                printf " ./manifest/compose/letsencrypt/webroot.yml"
-            else
-                printf " ./manifest/compose/letsencrypt/standalone.yml"
-            fi
-
-            if [ "$flag_enable_daemon" == "x" ]; then
-                printf " ./manifest/compose/letsencrypt/daemon.dep.yml"
-            fi
-        fi
-    ) \
-    $( # Enable Database
-        if [ "$flag_enable_db" == "x" ]; then 
-            printf " ./manifest/compose/database/database.yml"
-            if [ "$flag_enable_panel" == "x" ]; then
-                printf " ./manifest/compose/database/panel.dep.yml"
-            fi
-        fi ) \
-    | bin/yq read --stripComments - > $flag_stdout
-
+    cd manifest/compose
+    yq -n "eval(load_str(\"base.yq\"))" > ../../docker-compose.yml
+    cd ../../
 
     # Build .env Configuration
 
@@ -115,8 +68,8 @@ function build_config {
         echo "" >> .env
     fi
 
-    if [ "$flag_enable_panel" == "x" ]; then
-        if [ "$flag_enable_build" == "x" ]; then
+    if [ "$panel_enabled" == "true" ]; then
+        if [ "$dev_build" == "true" ]; then
             if grep -q "PANEL_VERSION=" .env; then
                 sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
             else
@@ -125,8 +78,8 @@ function build_config {
         fi
     fi
 
-    if [ "$flag_enable_daemon" == "x" ]; then
-        if [ "$flag_enable_build" == "x" ]; then
+    if [ "$daemon_enabled" == "true" ]; then
+        if [ "$dev_build" == "true" ]; then
             if grep -q "DAEMON_VERSION=" .env; then
                 sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
             else
@@ -143,16 +96,6 @@ function build_config {
         fi
     fi
 
-    if [ "$flag_enable_db" == "x" ]; then
-        if [ ! $config_database_ip_address == "" ]; then
-            if grep -q "MYSQL_ADDRESS=" .env; then
-                sed -i "s|MYSQL_ADDRESS=.*|MYSQL_ADDRESS=$config_database_ip_address:3306|" .env
-            else
-                echo "MYSQL_ADDRESS=$config_database_ip_address:3306" >> .env
-            fi
-        fi
-    fi
-
     if [ ! $config_docker_socket == "" ]; then
         if grep -q "DOCKER_SOCKET=" .env; then
             sed -i "s|DOCKER_SOCKET=.*|DOCKER_SOCKET=$config_docker_socket|" .env
@@ -162,25 +105,36 @@ function build_config {
     fi
 
     # Create conf.d/data directory
+    echo "Creating \"conf.d\" Directory"
 
     # Make directory and populate it with base environment files
     mkdir -m 700 -p conf.d
     cp -rpnv ./manifest/config/env/* ./conf.d/
 
     # Builds Let's Encrypt Directory and config.
-    if [ "$flag_enable_le" == "x" ]; then
+    if [ "$certbot_enabled" == "true" ]; then
         mkdir -p ./conf.d/letsencrypt
         rm -f ./conf.d/letsencrypt/cli.ini
 
         # Determines which method Let's Encrypt will use when deploying certificates.
         # This simplifies running the certbot command.
-        if [ "$flag_enable_panel" == "x" ]; then
+        if [ "$panel_enabled" == "true" ]; then
             cp ./manifest/config/letsencrypt/webroot.ini ./conf.d/letsencrypt/cli.ini
         else 
             cp ./manifest/config/letsencrypt/standalone.ini ./conf.d/letsencrypt/cli.ini
         fi
     fi
 
+}
+
+# Notify user if yq is missing from their system and prompt to download it.
+function check_yq {
+    if ! command -v yq &> /dev/null; then
+        echo "Error! Command 'yq' is missing from your system. Please check to make sure it is installed before continuing."
+        echo "Download the latest version yq v4.x at https://github.com/mikefarah/yq/releases/"
+        echo ""
+        exit
+    fi
 }
 
 # Fixing some nonsense with function returning
@@ -199,23 +153,18 @@ for ((i=1; i<=$#; i++)); do
                 ;;
             # Enable Services
             --daemon) # Enables wings
-                flag_enable_daemon="x"
+                daemon_enabled="true"
                 missing_flags="no"
                 ;;
             --panel) # Enables panel
-                flag_enable_panel="x"
+                panel_enabled="true"
                 missing_flags="no"
                 ;;
-            --database) # Enables Database
-                flag_enable_db="x"
-                missing_flags="no"
-                ;;
-            --letsencrypt) # Enable Let's Encrypt
-                flag_enable_le="x"
-                missing_flags="no"
+            --certbot) # Enable Let's Encrypt
+                certbot_enabled="true"
                 ;;
             --build)
-                flag_enable_build="x"
+                dev_build="true"
                 ;;
             # Modify Certain runtime options
             --daemon-dir)
@@ -226,10 +175,6 @@ for ((i=1; i<=$#; i++)); do
                 ((i++))
                 config_docker_socket="${!i}"
                 ;;
-            --db-address) # Allows Database to be bound to a port;
-                ((i++))
-                config_database_ip_address="${!i}"
-                ;;
         esac
     else
         _command+=("${!i}")
@@ -237,16 +182,15 @@ for ((i=1; i<=$#; i++)); do
 done
 
 if [ $missing_flags == "yes" ]; then
-    flag_enable_panel="x"
-    flag_enable_daemon="x"
-    flag_enable_db="x"
-    flag_enable_le="x"
+    panel_enabled="true"
+    daemon_enabled="true"
+    certbot_enabled="true"
 fi
 
-if [ "$flag_enable_panel" = "" ] && [ "$flag_enable_daemon" = "" ]; then
+if [ "$panel_enabled" = "" ] && [ "$daemon_enabled" = "" ]; then
     echo "Error! Missing --panel and or --daemon flag! You must specify at least one when building a custom compose file."
     exit
 fi
 
-
+check_yq
 build_config

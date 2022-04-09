@@ -5,7 +5,7 @@
 ###
 
 # Prep Container for usage
-function initContainer {
+function checkDatabase {
     # Check if MySQL is up and running
     echo "[init] Waiting for database connection..."
     i=0
@@ -100,16 +100,17 @@ function startServer {
 
 ## Start ##
 
-initContainer
-
 case "${1}" in
     p:start)
+        checkDatabase
         startServer
         ;;
     p:worker)
+        checkDatabase
         exec php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
         ;;
     p:cron)
+        checkDatabase
         exec /usr/sbin/crond -f -l 0
         ;;
     *)

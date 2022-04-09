@@ -1,0 +1,11 @@
+.services += load("services/panel.yml")
+| with(select(env(database_enabled) == "true");
+    .services.panel.depends_on.mariadb.condition = "service_started" |
+    .services.panel.depends_on.redis.condition = "service_started"    
+)
+| with(select(env(dev_build) == "false");
+    del(.services.panel.build)  
+)
+| with(select(env(exclude_database) == "false");
+    eval(load_str("services/database.yq"))
+)

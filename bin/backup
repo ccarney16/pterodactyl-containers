@@ -1,0 +1,34 @@
+#!/bin/sh
+
+## 
+# Pterodactyl Backup Script
+#
+# This script runs a backup to the current directory.
+# Intended to work alongside another backup system (rsnapshot, borgbackup, etc...)
+##
+
+set -euf -o pipefail
+
+workDir="$(pwd)"
+
+cd "$(dirname $0)/../"
+
+# Check if panel exists, if not, exit.
+if ! [[ "$(docker-compose config --services)" =~ "panel" ]]; then
+    echo "Docker Compose service \"panel\" does not exist! Aborting backup..."
+    exit 1
+fi
+
+echo "-- Starting Pterodactyl Backup --"
+
+echo ""
+echo "Backing up Database"
+docker-compose run --rm -v "${workDir}":/backup panel php artisan schema:dump --path=/backup/db-dump.sql
+
+echo ""
+echo "Backing up Configuration"
+cp -v data/panel/pterodactyl.conf "${workDir}/pterodactyl.conf"
+cp -rv conf.d/ "${workDir}/conf.d"
+
+echo ""
+echo "Backup Complete!"
