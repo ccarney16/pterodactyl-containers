@@ -3,7 +3,6 @@
 ##
 certbot:
   command: renew
-  container_name: pterodactyl-certbot
   image: docker.io/certbot/certbot:latest
   ports:
   - 80:80

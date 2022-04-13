@@ -1,5 +1,5 @@
 .services += load("services/panel.yml")
-| with(select(env(database_enabled) == "true");
+| with(select(env(exclude_database) == "false");
     .services.panel.depends_on.mariadb.condition = "service_started" |
     .services.panel.depends_on.redis.condition = "service_started"    
 )
