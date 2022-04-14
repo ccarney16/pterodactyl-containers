@@ -9,9 +9,9 @@
 
 # Toggle Flags
 missing_flags="yes"
-panel_enabled=""
-daemon_enabled=""
-certbot_enabled=""
+panel_enabled="false"
+daemon_enabled="false"
+certbot_enabled="false"
 exclude_database="false"
 dev_build="false"
 
