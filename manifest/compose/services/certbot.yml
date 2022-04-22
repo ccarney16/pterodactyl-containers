@@ -9,3 +9,4 @@ certbot:
   - 443:443
   volumes:
   - ./conf.d/letsencrypt:/etc/letsencrypt
+  - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
