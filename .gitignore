@@ -1,5 +1,5 @@
-conf.d/
-data/
-.env
-docker-compose.yml
-docker-compose.*.yml
+/conf.d/
+/data/
+/.env
+/docker-compose.yml
+/docker-compose.*.yml

@@ -1,4 +1,0 @@
-.services += load("services/daemon.yml")
-| with(select(env(dev_build) == "false");
-    del(.services.daemon.build)  
-)

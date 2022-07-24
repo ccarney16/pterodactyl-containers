@@ -9,26 +9,27 @@
 
 set -euf -o pipefail
 
+exec > >(trap "" INT TERM; awk '{ print strftime("[%m/%d/%y %H:%M:%S]"), $0 }')
+exec 2> >(trap "" INT TERM; awk '{ print strftime("[%m/%d/%y %H:%M:%S]"), $0 }' >&2)
+
 workDir="$(pwd)"
 
 cd "$(dirname $0)/../"
 
 # Check if panel exists, if not, exit.
 if ! [[ "$(docker-compose config --services)" =~ "panel" ]]; then
-    echo "Docker Compose service \"panel\" does not exist! Aborting backup..."
-    exit 1
+    printf "Docker Compose service \"panel\" does not exist! There is no backup to perform..."
+    exit
 fi
 
-echo "-- Starting Pterodactyl Backup --"
+printf "## Starting Pterodactyl Backup ##\n"
 
-echo ""
-echo "Backing up Database"
+printf "Backing up Database\n"
 docker-compose run --rm -v "${workDir}":/backup panel php artisan schema:dump --path=/backup/db-dump.sql
 
-echo ""
-echo "Backing up Configuration"
+printf "Backing up Configuration\n"
 cp -v data/panel/pterodactyl.conf "${workDir}/pterodactyl.conf"
 cp -rv conf.d/ "${workDir}/conf.d"
 
-echo ""
-echo "Backup Complete!"
+printf "## Backup Complete ##\n"
+sleep 0.5

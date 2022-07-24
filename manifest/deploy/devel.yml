@@ -1,0 +1,124 @@
+###
+# Build Configuration File
+#
+# This is considered the base configuration for this repo.
+# Everything to build and deploy pterodactyl is in here.
+###
+version: "3.8"
+services:
+  ##
+  # -- Let's Encrypt Certbot --
+  ##
+  certbot:
+    command: renew
+    image: docker.io/certbot/certbot:latest
+    profiles: [ letsencrypt ]
+    volumes:
+      - ./conf.d/letsencrypt:/etc/letsencrypt
+      - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
+  ##
+  # -- Panel Cron --
+  # These are required for schedules and other misc tasks to 
+  # function correctly.
+  ##
+  cron:
+    command: p:cron
+    env_file: ./conf.d/panel.env
+    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    profiles: [ panel ]
+    restart: always
+    volumes:
+      - ./data/panel:/data
+  ##
+  # -- Pterodactyl Daemon --
+  # This service provides the wings runtime.
+  ##
+  daemon:
+    build:
+      args:
+        VERSION: ${DAEMON_VERSION}
+      context: ./manifest/images/daemon
+    environment:
+      - TZ=${DAEMON_TIMEZONE:-UTC}
+    image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+    ports:
+      - 2022:2022
+      - 8080:8080
+    privileged: true
+    profiles: [ daemon ]
+    restart: always
+    volumes:
+      - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+      - /tmp/pterodactyl/:/tmp/pterodactyl/
+      - ./conf.d/daemon:/etc/pterodactyl
+      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
+      - ./conf.d/certs:/etc/certs:ro
+    working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
+  ##
+  # -- MariaDB --
+  # Required for the control panel to work.
+  # Stores Server/User information
+  ##
+  mariadb:
+    image: docker.io/library/mariadb:10.8
+    env_file: ./conf.d/mariadb.env
+    networks:
+      default:
+        aliases:
+          - mysql
+    profiles: [ panel ]
+    restart: always
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+  ##
+  # -- Pterodactyl Panel --
+  # This is the container that provides the main web interface.
+  ##
+  panel:
+    build:
+      args:
+        VERSION: ${PANEL_VERSION}
+      context: ./manifest/images/panel
+    env_file: ./conf.d/panel.env
+    image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    ports:
+      - 80:80
+      - 443:443
+    profiles: [ panel ]
+    restart: always
+    volumes:
+      - ./data/panel:/data
+      - ./conf.d/letsencrypt:/etc/letsencrypt
+      - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
+      - ./conf.d/certs:/etc/certs
+    depends_on:
+      mariadb:
+        condition: service_started
+      redis:
+        condition: service_started
+  ##
+  # -- Redis --
+  ##
+  redis:
+    cpu_count: 2
+    cpu_percent: 50
+    image: docker.io/library/redis:alpine
+    mem_limit: 128m
+    networks:
+      default:
+        aliases:
+          - cache
+    profiles: [ panel ]
+    restart: always
+  ##
+  # -- Panel Worker --
+  ##
+  worker:
+    command: p:worker
+    env_file: ./conf.d/panel.env
+    image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    profiles: [ panel ]
+    restart: always
+    volumes:
+      - ./data/panel:/data

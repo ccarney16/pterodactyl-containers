@@ -6,141 +6,83 @@
 
 
 ## VARIABLES
-
-# Toggle Flags
-missing_flags="yes"
-panel_enabled="false"
-daemon_enabled="false"
-certbot_enabled="false"
-exclude_database="false"
-dev_build="false"
-
-# Daemon Configuration
-config_daemon_dir=""
-config_docker_socket=""
+config_name=""
+dotenv_environment=()
+enabled_services=""
+show_configs=false
+show_profiles=false
 
 # Functions
 
 # Returns the help message
 function _return_help {
 	echo ""
-	echo "Pterodactyl Docker Deployment Script"
+	echo "Docker Deployment Script"
 	echo "Usage: $0 [options]"
 	echo ""
 	echo "Options:"
 	echo ""
-	echo " --help  , -h             - returns this screen"
-    echo " --panel                  - Adds panel (*)"
-    echo " --daemon                 - Adds daemon (*)"
-    echo " --certbot                - Adds letsencrypt certbot"
-    echo " --build                  - Enables build options"
-    echo ""
-    echo " --daemon-dir []          - Configures where the daemon sets its files and config (ex. /var/lib/pterodactyl)"
-    echo " --docker-socket []       - Where the daemon contacts docker (ex. /var/run/docker.sock)"
-    echo " --no-panel-db            - Do not deploy with provided database services."
-    echo ""
-    echo " (*) When building a custom docker-compose file, you must specify either the panel or daemon to build"
+	echo " --help, -h               - returns this screen"
+    echo " --available-profiles     - lists available profiles in a config"
+    echo " --available-configs      - returns a list of available configs."
+    echo " --enable-profiles, -p    - enables selected profiles (ex. 'debug' or 'debug,dev')"
+    echo " --config, -c             - selects a different configuration to be used for deployment"
+    echo " --environment, -e        - modifies a compose environment variable"
     echo ""
 }
 
 function build_config {
-    >&2 echo "Building Configuration..."
-
-    IFS=" "
+    >&2 printf "Building configuration using '$config_name' as base...\n"
 
     if [ -f docker-compose.yml ]; then
+        printf "Backing up previous compose config.\n"
+
         rm -rf docker-compose.bak.yml
         mv docker-compose.yml docker-compose.bak.yml
     fi
 
-    export panel_enabled daemon_enabled certbot_enabled exclude_database dev_build
+    cp "./manifest/deploy/$config_name.yml" docker-compose.yml
 
-    cd manifest/compose
-    yq -n "eval(load_str(\"base.yq\"))" > ../../docker-compose.yml
-    cd ../../
+    # Copy configuration 
+    printf "Applying configuration.\n"
+    cp -rnv ./manifest/deploy/default/* .
 
-    # Build .env Configuration
+    printf "Applying overrides.\n"
+    if [ -d ./manifest/deploy/override/$config_name/ ]; then
+        cp -rfv ./manifest/deploy/override/$config_name/* .
+    elif [ -d ./manifest/deploy/override/default/ ]; then
+        cp -rfv ./manifest/deploy/override/default/* .
+    fi
 
-    # Create .env file if it does not exist.
+    printf "Applying compose environment.\n"
     if ! [ -f .env ]; then
-        echo "## Project configuration file ##" > .env
-        echo "# DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING!" >> .env
-        echo "" >> .env
+        printf "## Project environment configuration ##\n#\n" >> .env
+        printf "#  This file contains environment configuration for a docker compose project.\n" >> .env
+        printf "#  Please do not configure this file unless you know what you are doing!\n\n" >> .env
     fi
 
-    if [ "$panel_enabled" == "true" ]; then
-        if [ "$dev_build" == "true" ]; then
-            if grep -q "PANEL_VERSION=" .env; then
-                sed -i "s/PANEL_VERSION=.*/$(grep "PANEL_VERSION=" manifest/version.txt)/" .env
-            else
-                grep "PANEL_VERSION=" manifest/version.txt >> .env
-            fi
-        fi
-    fi
+    # prepend some defaults to the dotenv_environment.
+    default_environment=(
+        "COMPOSE_PROFILES=${enabled_profiles}")
+    dotenv_environment=("${default_environment[@]}" "${dotenv_environment[@]}")
 
-    if [ "$daemon_enabled" == "true" ]; then
-        if [ "$dev_build" == "true" ]; then
-            if grep -q "DAEMON_VERSION=" .env; then
-                sed -i "s/DAEMON_VERSION=.*/$(grep "DAEMON_VERSION=" manifest/version.txt)/" .env
-            else
-                grep "DAEMON_VERSION=" manifest/version.txt >> .env
-            fi
-        fi
-
-        if [ ! $config_daemon_dir == "" ]; then
-            if grep -q "DAEMON_DATA_DIRECTORY=" .env; then
-                sed -i "s|DAEMON_DATA_DIRECTORY=.*|DAEMON_DATA_DIRECTORY=${config_daemon_dir}|" .env
-            else
-                echo "DAEMON_DATA_DIRECTORY=$config_daemon_dir" >> .env
-            fi
-        fi
-    fi
-
-    if [ ! $config_docker_socket == "" ]; then
-        if grep -q "DOCKER_SOCKET=" .env; then
-            sed -i "s|DOCKER_SOCKET=.*|DOCKER_SOCKET=$config_docker_socket|" .env
+    for entry in ${dotenv_environment[@]}; do
+        read -d "=" -rasplit<<< "$entry"
+        if grep -q "^${split[0]}=" .env; then
+            sed -i "s|${split[0]}=.*|$entry|" .env
         else
-            echo "DOCKER_SOCKET=$config_docker_socket" >> .env
+            echo "$entry" >> .env
         fi
-    fi
-
-    # Create conf.d/data directory
-    echo "Creating \"conf.d\" Directory"
-
-    # Make directory and populate it with base environment files
-    mkdir -m 700 -p conf.d
-    cp -rpnv ./manifest/config/env/* ./conf.d/
-
-    # Builds Let's Encrypt Directory and config.
-    if [ "$certbot_enabled" == "true" ]; then
-        mkdir -p ./conf.d/letsencrypt
-        rm -f ./conf.d/letsencrypt/cli.ini
-
-        # Determines which method Let's Encrypt will use when deploying certificates.
-        # This simplifies running the certbot command.
-        if [ "$panel_enabled" == "true" ]; then
-            cp ./manifest/config/letsencrypt/webroot.ini ./conf.d/letsencrypt/cli.ini
-        else 
-            cp ./manifest/config/letsencrypt/standalone.ini ./conf.d/letsencrypt/cli.ini
-        fi
-    fi
-
-}
-
-# Notify user if yq is missing from their system and prompt to download it.
-function check_yq {
-    if ! command -v yq &> /dev/null; then
-        echo "Error! Command 'yq' is missing from your system. Please check to make sure it is installed before continuing."
-        echo "Download the latest version yq v4.x at https://github.com/mikefarah/yq/releases/"
-        echo ""
-        exit
-    fi
+    done
 }
 
 # Fixing some nonsense with function returning
 IFS=
 
 cd "$(dirname $0)/../"
+
+# Enable defaults
+. manifest/deploy/deploy.conf
 
 # Split our arguements into seperate sections
 _command=()
@@ -151,29 +93,23 @@ for ((i=1; i<=$#; i++)); do
                 _return_help
                 exit
                 ;;
-            # Enable Services
-            --daemon) # Enables wings
-                daemon_enabled="true"
-                missing_flags="no"
+            --available-profiles)
+                show_profiles=true
                 ;;
-            --panel) # Enables panel
-                panel_enabled="true"
-                missing_flags="no"
+            --available-configs)
+                show_configs=true
                 ;;
-            --certbot) # Enable Let's Encrypt
-                certbot_enabled="true"
-                ;;
-            --build)
-                dev_build="true"
-                ;;
-            # Modify Certain runtime options
-            --daemon-dir)
+            --config | -c)
                 ((i++))
-                config_daemon_dir="${!i}"
+                config_name="${!i}"
                 ;;
-            --docker-socket)
+            --enable-profiles | -p)
                 ((i++))
-                config_docker_socket="${!i}"
+                enabled_profiles="${!i}"
+                ;;
+            --environment | -e)
+                ((i++))
+                dotenv_environment+=("${!i}")
                 ;;
         esac
     else
@@ -181,16 +117,24 @@ for ((i=1; i<=$#; i++)); do
     fi
 done
 
-if [ $missing_flags == "yes" ]; then
-    panel_enabled="true"
-    daemon_enabled="true"
-    certbot_enabled="true"
-fi
 
-if [ "$panel_enabled" = "" ] && [ "$daemon_enabled" = "" ]; then
-    echo "Error! Missing --panel and or --daemon flag! You must specify at least one when building a custom compose file."
+if ! [ -f "./manifest/deploy/$config_name.yml" ]; then
+    printf "Config '$config_name' does not exist! Exiting...\n"
     exit
 fi
 
-check_yq
+if [ $show_profiles == true ]; then
+    printf "Available Profiles for '$config_name' config: "
+    docker-compose --project-directory manifest/deploy/default -f manifest/deploy/$config_name.yml config --profiles | tr '\n' ' '
+    printf '\n'
+    exit
+fi
+
+if [ $show_configs == true ]; then
+    printf "Available Configs: "
+    find manifest/deploy -name '*.yml' -exec basename {} \; | sed -e 's/\.yml$//' | tr '\n' ' '
+    printf "\n"
+    exit
+fi
+
 build_config
