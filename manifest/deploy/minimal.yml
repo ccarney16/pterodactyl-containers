@@ -59,10 +59,6 @@ services:
   # This is the container that provides the main web interface.
   ##
   panel:
-    build:
-      args:
-        VERSION: ${PANEL_VERSION}
-      context: ./manifest/images/panel
     env_file: ./conf.d/panel.env
     image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     profiles: [ panel ]
