@@ -1,11 +1,11 @@
-FROM alpine:3.15 as base
+FROM alpine:3.16 as base
 
 LABEL MAINTAINER="Cameron Carney <ccarney16@live.com>"
 
 RUN \
-    apk --update add curl gettext mariadb-client nginx php7 php7 php7-bcmath php7-common php7-dom php7-fileinfo \
-    php7-fpm php7-gd php7-memcached php7-mbstring php7-openssl php7-pdo php7-phar php7-json php7-sodium \
-    php7-pdo_mysql php7-session php7-simplexml php7-tokenizer php7-ctype php7-zlib php7-zip php7-xmlwriter \
+    apk --update add curl gettext mariadb-client nginx php8 php8 php8-bcmath php8-common php8-dom php8-fileinfo \
+    php8-fpm php8-gd php8-mbstring php8-openssl php8-pdo php8-phar php8-json php8-sodium \
+    php8-pdo_mysql php8-posix php8-session php8-simplexml php8-tokenizer php8-ctype php8-zlib php8-zip php8-xmlwriter \
     tini \
     && mkdir -p /var/www/html /run/nginx /etc/nginx/conf.d/
 
@@ -24,20 +24,20 @@ RUN \
     apk add yarn git;
 
 RUN \
-    git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch ${GIT_BRANCH}; \
-    rm .git -rf; \
-    chmod -R 755 storage/* bootstrap/cache; \
-    find storage -type d > .storage.tmpl; \
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
-    cp .env.example .env; \
-    composer install --ansi --no-dev --optimize-autoloader; \
-    chown -R nginx:nginx *;
+    git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch ${GIT_BRANCH} \
+    && rm .git -rf \
+    && chmod -R 755 storage/* bootstrap/cache \
+    && find storage -type d > .storage.tmpl \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && cp .env.example .env \
+    && composer install --ansi --no-dev --optimize-autoloader \
+    && chown -R nginx:nginx *;
 
 RUN \
-    yarn install --production; \
-    yarn add cross-env; \
-    yarn run build:production; \
-    rm -rf node_modules;
+    yarn install --production \
+    && yarn add cross-env \
+    && yarn run build:production \
+    && rm -rf node_modules
 
 # Remove persistent data folders as they will be symlinked further down
 RUN rm .env ./storage -rf
