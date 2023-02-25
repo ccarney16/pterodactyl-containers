@@ -25,7 +25,11 @@ fi
 printf "## Starting Pterodactyl Backup ##\n"
 
 printf "Backing up Database\n"
-docker-compose run --rm -v "${workDir}":/backup panel php artisan schema:dump --path=/backup/db-dump.sql
+docker-compose run \
+    --rm -v "${workDir}":/backup \
+    --entrypoint /bin/sh \
+    panel -c "
+        mysqldump --user=\${DB_USERNAME} --password=\"\${DB_PASSWORD}\" --host=\${DB_HOST} --port=\${DB_PORT} --databases \${DB_DATABASE} > /backup/db-dump.sql" 
 
 printf "Backing up Configuration\n"
 cp -v data/panel/pterodactyl.conf "${workDir}/pterodactyl.conf"
