@@ -1,57 +1,89 @@
 #!/bin/bash
 
 ###
-# create-project - Creates initial project configuration
+# cdeploy - deploys a docker-compose project
 ###
 
 
 ## VARIABLES
+_deploy_dir=manifest/deploy
+_install_dir=${_deploy_dir}/install
+_override_dir=${_deploy_dir}/overrides
+_template_dir=${_deploy_dir}/templates
+
 config_name=""
 dotenv_environment=()
+force=false
 enabled_services=""
-show_configs=false
-show_profiles=false
+no_symlink=false
 
 # Functions
 
 # Returns the help message
 function _return_help {
-	echo ""
-	echo "Docker Deployment Script"
-	echo "Usage: $0 [options]"
-	echo ""
-	echo "Options:"
-	echo ""
-	echo " --help, -h               - returns this screen"
+    echo ""
+    echo "Docker Compose Deployment Script"
+    echo "Usage: $0 [options]"
+    echo ""
+    echo "Options:"
+    echo ""
+    echo " --help, -h               - returns this screen"
+    echo " --force, -f              - force overwrite deployment"
     echo " --available-profiles     - lists available profiles in a config"
     echo " --available-configs      - returns a list of available configs."
     echo " --enable-profiles, -p    - enables selected profiles (ex. 'debug' or 'debug,dev')"
     echo " --config, -c             - selects a different configuration to be used for deployment"
+    echo " --no-symlink, -s         - Copies the docker-compose file instead of symlinking"
     echo " --environment, -e        - modifies a compose environment variable"
     echo ""
 }
 
-function build_config {
+# Used to embed this script into a project directory under bin/
+function embed_cdeploy {
+    if ! [ -f bin/deploy ]; then
+        printf "Embedding cdeploy into current project"
+        mkdir -p bin
+        cp "$0" bin/deploy
+
+        printf "cdeploy added to project"
+    else
+        printf "A script called bin/deploy already exists! Please remove this script manually before trying to add me to this project..."
+    fi
+}
+
+function deploy_project {
     >&2 printf "Building configuration using '$config_name' as base...\n"
 
+    # Notify the user that they will be overriding parts of the deployment
     if [ -f docker-compose.yml ]; then
-        printf "Backing up previous compose config.\n"
-
-        rm -rf docker-compose.bak.yml
-        mv docker-compose.yml docker-compose.bak.yml
+        printf "Warning! This project is already deployed! Redeploying will override certain configuration files.\n"
+        read -p "Please make sure you have a proper backup of this project. Do you wish to continue (y/N)? " yn
+        if ! [[ ${yn,,} == y* ]]; then
+            exit
+        fi
     fi
 
-    cp "./manifest/deploy/$config_name.yml" docker-compose.yml
+    type pre_deploy &>/dev/null && pre_deploy
+
+    # Remove old symlink and make new one
+    rm -rf docker-compose.yml
+
+    if [ "${no_symlink}" == "true" ]; then
+        cp "${_template_dir}/${config_name}.yml" docker-compose.yml
+    else
+        ln -s "${_template_dir}/${config_name}.yml" docker-compose.yml
+    fi
 
     # Copy configuration 
-    printf "Applying configuration.\n"
-    cp -rnv ./manifest/deploy/default/* .
+    printf "Copying base configuration.\n"
+    cp -rnv ${_install_dir}/* .
 
-    printf "Applying overrides.\n"
-    if [ -d ./manifest/deploy/override/$config_name/ ]; then
-        cp -rfv ./manifest/deploy/override/$config_name/* .
-    elif [ -d ./manifest/deploy/override/default/ ]; then
-        cp -rfv ./manifest/deploy/override/default/* .
+
+    printf "Deploying any config overrides.\n"
+    if [ -d ${_override_dir}/${config_name}/ ]; then
+        cp -rfv ${_override_dir}/${config_name}/* .
+    elif [ -d ${_override_dir}/default/ ]; then
+        cp -rfv ${_override_dir}/default/* .
     fi
 
     printf "Applying compose environment.\n"
@@ -69,20 +101,39 @@ function build_config {
     for entry in ${dotenv_environment[@]}; do
         read -d "=" -rasplit<<< "$entry"
         if grep -q "^${split[0]}=" .env; then
-            sed -i "s|${split[0]}=.*|$entry|" .env
+            sed -i "s|${split[0]}=.*|${entry}|" .env
         else
-            echo "$entry" >> .env
+            echo "${entry}" >> .env
         fi
     done
+
+    ## Post Deployment execution
+    type post_deploy &>/dev/null && post_deploy
+
+}
+
+function display_profiles {
+    printf "Available Profiles for '${config_name}' config: "
+    docker-compose --project-directory ${_install_dir} -f ${_template_dir}/${config_name}.yml config --profiles | tr '\n' ' '
+    printf '\n'
+}
+
+function display_configs {
+    printf "Available Configs: "
+    find ${_template_dir} -name '*.yml' -exec basename {} \; | sed -e 's/\.yml$//' | tr '\n' ' '
+    printf "\n"
 }
 
 # Fixing some nonsense with function returning
 IFS=
 
-cd "$(dirname $0)/../"
+if [ ! -f ${_deploy_dir}/deploy.conf ]; then
+    printf "Missing deploy.conf (is this a deployable project?)!"
+    exit
+fi
 
 # Enable defaults
-. manifest/deploy/deploy.conf
+. ${_deploy_dir}/deploy.conf
 
 # Split our arguements into seperate sections
 _command=()
@@ -94,10 +145,12 @@ for ((i=1; i<=$#; i++)); do
                 exit
                 ;;
             --available-profiles)
-                show_profiles=true
+                display_profiles
+                exit
                 ;;
             --available-configs)
-                show_configs=true
+                display_configs
+                exit
                 ;;
             --config | -c)
                 ((i++))
@@ -111,6 +164,16 @@ for ((i=1; i<=$#; i++)); do
                 ((i++))
                 dotenv_environment+=("${!i}")
                 ;;
+            # Embeds this script into a project
+            --embed)
+                embed_cdeploy
+                exit
+            --force | -f)
+                force=true
+                ;;
+            --no-symlink)
+                no_symlink=true
+                ;;
         esac
     else
         _command+=("${!i}")
@@ -118,23 +181,9 @@ for ((i=1; i<=$#; i++)); do
 done
 
 
-if ! [ -f "./manifest/deploy/$config_name.yml" ]; then
-    printf "Config '$config_name' does not exist! Exiting...\n"
+if ! [ -f "${_template_dir}/${config_name}.yml" ]; then
+    printf "Config '${config_name}' does not exist! Exiting...\n"
     exit
 fi
 
-if [ $show_profiles == true ]; then
-    printf "Available Profiles for '$config_name' config: "
-    docker-compose --project-directory manifest/deploy/default -f manifest/deploy/$config_name.yml config --profiles | tr '\n' ' '
-    printf '\n'
-    exit
-fi
-
-if [ $show_configs == true ]; then
-    printf "Available Configs: "
-    find manifest/deploy -name '*.yml' -exec basename {} \; | sed -e 's/\.yml$//' | tr '\n' ' '
-    printf "\n"
-    exit
-fi
-
-build_config
+deploy_project

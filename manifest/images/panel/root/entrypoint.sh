@@ -1,119 +1,65 @@
-#!/bin/sh
+#!/bin/bash
 
 ###
-# /entrypoint.sh - Manages the startup of pterodactyl panel
+# /entrypoint.sh - Manages the startup of the web application
 ###
-
-# Prep Container for usage
-function checkDatabase {
-    # Check if MySQL is up and running
-    echo "[init] Waiting for database connection..."
-    i=0
-    until wait-for -q -t 15 $DB_HOST:$DB_PORT; do
-        echo "[init] Database connection timeout"
-
-        # wait for 5 seconds before check again
-        sleep 5
-        i=`expr $i + 1`
-        if [ "$i" = "5" ]; then
-            echo "[init] Connection threshold reached, unable to contact MySQL (Is MySQL Running?)"
-            exit 3
-        fi
-    done
-}
 
 # Runs the initial configuration on every startup
 function startServer {
-    echo ""
-    cat .storage.tmpl | while read line; do
-        mkdir -p "/data/${line}"
-    done
 
-    # Generate config file if it doesnt exist
-    if [ ! -e /data/pterodactyl.conf ]; then
-        echo ""
-        echo "[setup] Generating Application Key..."
+    # Create and set permissions for php session directory
+    echo "[init] Creating PHP Cache Directories"
+    mkdir -p /var/lib/caddy/php/{session,opcache,wsdlcache}
+    chmod 770 /var/lib/caddy/php/{session,opcache,wsdlcache}
 
-        # Generate base template
-        touch /data/pterodactyl.conf
-        echo "##" > /data/pterodactyl.conf
-        echo "# Generated on:" $(date +"%B %d %Y, %H:%M:%S") >> /data/pterodactyl.conf
-        echo "# This file was generated on first start and contains " >> /data/pterodactyl.conf
-        echo "# the key for sensitive information. All panel configuration " >> /data/pterodactyl.conf
-        echo "# can be done here using the normal method (NGINX not included!)," >> /data/pterodactyl.conf
-        echo "# or using Docker's environment variables parameter." >> /data/pterodactyl.conf
-        echo "##" >> /data/pterodactyl.conf
-        echo "" >> /data/pterodactyl.conf
-        echo "APP_KEY=SomeRandomString3232RandomString" >> /data/pterodactyl.conf
-
-        sleep 1
-        php artisan key:generate --force --no-interaction
-
-        echo "[setup] Application Key Generated"
-    fi
-    echo ""
-    echo "[setup] Clearing cache/views..."
-    
-    php artisan view:clear
-    php artisan config:clear
-
-    echo ""
-    echo "[setup] Migrating/Seeding database..."
-
-    php artisan migrate --seed --force
-
-    # Restore /data directory ownership to nginx.
-    chown -R nginx:nginx /data/
-    
-    # Checks if SSL certificate and key exists, otherwise default to http traffic
-    if [ -f "${SSL_CERT}" ] && [ -f "${SSL_CERT_KEY}" ]; then
-        envsubst '${SSL_CERT},${SSL_CERT_KEY}' \
-        < /etc/nginx/templates/https.conf > /etc/nginx/conf.d/default.conf
-    else
-        echo "[setup] Warning: SSL Certificate was not specified or doesnt exist, using HTTP."
-        cat /etc/nginx/templates/http.conf > /etc/nginx/conf.d/default.conf
+    # Allows this container to have extra functionality on init
+    if [ -d /entrypoint.d ]; then
+        echo "[init] /entrypoint.d exists. Executing pre-start functions"
+        for exec in /entrypoint.d/*.sh; do
+            source $exec
+        done
     fi
 
-    echo "--- Starting Pterodactyl Panel: ${VERSION} ---"
+    # Output loaded php modules before runtime.
+    printf "[init] Caddy Version: $(caddy version)\n"
+    _php_info=$(php -r "echo $PHP_VERSION;")
+    printf "[init] PHP Version: $_php_info\n"
+    printf "[init] Loaded PHP Modules:"
+    php -m | tr '\n' ' ' | sed 's/\[/\n  &/g'
+    printf "\n"
+
+    echo "--- Starting Web Server ---"
 
     # Run these as jobs and monitor their pid status
-    /usr/sbin/php-fpm8 --nodaemonize -c /etc/php8 & php_service_pid=$!
-    /usr/sbin/nginx -g "daemon off;" & nginx_service_pid=$!
+    /usr/sbin/php-fpm --nodaemonize --pid /var/lib/caddy/.php-fpm.pid & php_service_pid=$!
+    /usr/bin/caddy run --pidfile /var/lib/caddy/.caddy.pid --config /etc/caddy/Caddyfile & caddy_service_pid=$!
 
     # Monitor Child Processes
     while ( true ); do
         if ! kill -0 "$php_service_pid" 2>/dev/null; then
-            echo "[php] service is no longer running! exiting..."
-            sleep 5
-            wait "$php_service_pid";
+            echo "[php-fpm] service is no longer running! exiting..."
+            sleep 1
             exit 1
         fi
-        if ! kill -0 "$nginx_service_pid" 2>/dev/null; then
-            echo "[nginx] service is no longer running! exiting..."
-            sleep 5
-            wait "$nginx_service_pid"; 
+        if ! kill -0 "$caddy_service_pid" 2>/dev/null; then
+            echo "[caddy] service is no longer running! exiting..."
+            sleep 1
             exit 2
         fi
-        sleep 1
+        sleep 5
     done;
 }
 
-## Start ##
-
 case "${1}" in
-    p:start)
-        checkDatabase
+    "")
+        ;;
+    "start-web")
         startServer
         ;;
-    p:worker)
-        checkDatabase
-        exec php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
-        ;;
-    p:cron)
-        checkDatabase
-        exec /usr/sbin/crond -f -l 0
+    "cron")
+        yacron -c /etc/yacron.d
         ;;
     *)
-        exec ${@}
+        exec "$@"
         ;;
 esac
