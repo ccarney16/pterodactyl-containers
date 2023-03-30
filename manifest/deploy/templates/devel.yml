@@ -7,16 +7,6 @@
 version: "3.8"
 services:
   ##
-  # -- Let's Encrypt Certbot --
-  ##
-  certbot:
-    command: renew
-    image: docker.io/certbot/certbot:latest
-    profiles: [ letsencrypt ]
-    volumes:
-      - ./conf.d/letsencrypt:/etc/letsencrypt
-      - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
-  ##
   # -- Panel Cron --
   # These are required for schedules and other misc tasks to 
   # function correctly.
@@ -26,6 +16,7 @@ services:
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     profiles: [ panel ]
+    read_only: true
     restart: always
     volumes:
       - ./data/panel:/data
@@ -46,6 +37,7 @@ services:
       - 8080:8080
     privileged: true
     profiles: [ daemon ]
+    read_only: true
     restart: always
     volumes:
       - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
@@ -61,7 +53,7 @@ services:
   # Stores Server/User information
   ##
   mariadb:
-    image: docker.io/library/mariadb:10.8
+    image: docker.io/library/mariadb:10.11
     env_file: ./conf.d/mariadb.env
     networks:
       default:
@@ -69,6 +61,7 @@ services:
           - mysql
     profiles: [ panel ]
     restart: always
+    user: mysql
     volumes:
       - ./data/mysql:/var/lib/mysql
   ##
@@ -86,6 +79,7 @@ services:
       - 80:80
       - 443:443
     profiles: [ panel ]
+    read_only: true
     restart: always
     volumes:
       - ./data/panel:/data
@@ -101,8 +95,6 @@ services:
   # -- Redis --
   ##
   redis:
-    cpu_count: 2
-    cpu_percent: 50
     image: docker.io/library/redis:alpine
     mem_limit: 128m
     networks:
@@ -110,7 +102,9 @@ services:
         aliases:
           - cache
     profiles: [ panel ]
+    read_only: true
     restart: always
+    user: redis
   ##
   # -- Panel Worker --
   ##
@@ -119,6 +113,7 @@ services:
     env_file: ./conf.d/panel.env
     image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     profiles: [ panel ]
+    read_only: true
     restart: always
     volumes:
       - ./data/panel:/data

@@ -41,13 +41,13 @@ function _return_help {
 # Used to embed this script into a project directory under bin/
 function embed_cdeploy {
     if ! [ -f bin/deploy ]; then
-        printf "Embedding cdeploy into current project"
+        printf "Embedding cdeploy into current project.\n"
         mkdir -p bin
         cp "$0" bin/deploy
 
-        printf "cdeploy added to project"
+        printf "cdeploy added to project.\n"
     else
-        printf "A script called bin/deploy already exists! Please remove this script manually before trying to add me to this project..."
+        printf "A script called bin/deploy already exists! Please remove this script manually before trying to add me to this project...\n"
     fi
 }
 
@@ -128,7 +128,7 @@ function display_configs {
 IFS=
 
 if [ ! -f ${_deploy_dir}/deploy.conf ]; then
-    printf "Missing deploy.conf (is this a deployable project?)!"
+    printf "Missing manifest/deploy/deploy.conf (Is this a deployable project?)!\n"
     exit
 fi
 
@@ -168,6 +168,7 @@ for ((i=1; i<=$#; i++)); do
             --embed)
                 embed_cdeploy
                 exit
+                ;;
             --force | -f)
                 force=true
                 ;;

@@ -22,7 +22,7 @@ if ! [[ "$(docker-compose config --services)" =~ "panel" ]]; then
     exit
 fi
 
-printf "## Starting Pterodactyl Backup ##\n"
+printf "## Starting Pterodactyl Database Dump ##\n"
 
 printf "Backing up Database\n"
 docker-compose run \
@@ -31,9 +31,8 @@ docker-compose run \
     panel -c "
         mysqldump --user=\${DB_USERNAME} --password=\"\${DB_PASSWORD}\" --host=\${DB_HOST} --port=\${DB_PORT} --databases \${DB_DATABASE} > /backup/db-dump.sql" 
 
-printf "Backing up Configuration\n"
-cp -v data/panel/pterodactyl.conf "${workDir}/pterodactyl.conf"
-cp -rv conf.d/ "${workDir}/conf.d"
+printf "## Application Dump Complete ##\n\n"
 
-printf "## Backup Complete ##\n"
+printf "!! Warning, this application only has exported the database configuration for pterodactyl.\n"
+printf "Please make sure that the database and configuration of the panel and daemon are backed up separately.\n"
 sleep 0.5
