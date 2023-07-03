@@ -29,10 +29,7 @@ force           := "false"
 template        := "default" 
 override        := "template"
 
-build-env       := "--env-file ./manifest/images/build.env --file ./manifest/images/build.yml"
-
-dump-dir          := justfile_directory() + "/data/dump"
-dump-mariadb-opt-flags  := "--single-transaction"
+build-env       := "--env-file ./manifest/build/build.env --file ./manifest/build/build.yml"
 
 ## CORE COMMANDS ##
     
@@ -59,18 +56,18 @@ build *args:
 build-tag service new-tag:
     @{{docker-bin}} tag $({{compose-bin}} {{build-env}} config --format json | jq -r '.services.{{service}}.image') {{new-tag}}
 
-# Run Docker Compose commands
+# Execute Docker Compose commands
 compose *args:
     {{compose-bin}} "$@"
 
-# Deploy the project
-deploy:
+# Initializes the project
+init:
     #!/bin/bash
     set -euf -o pipefail
 
     if ! [ "{{force}}" == "true" ]; then
         if [ -f docker-compose.yml ]; then
-            printf "Warning! This project is already deployed! Redeploying will override certain configuration files.\n"
+            printf "Warning! This project has already been initialized! Running this command will override certain configuration files.\n"
             read -p "Please make sure you have a proper backup of this project. Do you wish to continue (y/N)? " yn
             if ! [[ ${yn,,} == y* ]]; then
                 exit 1
@@ -88,7 +85,10 @@ deploy:
     printf "Applying template environment.\n"
     cp -rfvT {{_templates-dir}}/{{template}} .
 
-    echo "done"
+    printf "Setting project directory permissions to '750'\n"
+    chmod 750 .
+
+    echo "Initialization done"
 
 # Add or modify shell-formatted environment files
 set-environment file env:
@@ -118,9 +118,12 @@ unset-environment file env:
         exit 1
     fi    
 
+# Set Docker Compose environment parameters
 set-compose-environment env: (set-environment ".env" env)
+# Set Docker Compose profiles
+set-compose-profiles profile: (set-environment ".env" "COMPOSE_PROFILES=" + profile)
+# Set Container Environment parameters
 set-container-environment container env: (set-environment "conf.d/" + container + ".env" env)
-set-profiles profile: (set-environment ".env" "COMPOSE_PROFILES=" + profile)
 
 # Force reset the project
 reset:
@@ -135,16 +138,19 @@ reset:
 		printf "  just force=true reset\n\n"
 	fi
 
+######################
 ## PROJECT COMMANDS ##
+######################
 
 # This section is dedicated towards project specific commands
 # that may be used by the end user.
 
-#setup: install fix-permissions
-
 # Execute Artisan commands
 artisan *args:
     {{compose-bin}} run --rm --no-deps panel php artisan "$@"
+
+dump-dir          := justfile_directory() + "/data/dump"
+dump-mariadb-opt-flags  := "--single-transaction"
 
 # Dumps the application to a specified directory
 dump dir=dump-dir:
@@ -172,7 +178,7 @@ dump dir=dump-dir:
 import dir=dump-dir:
     #!/bin/bash
 
-# Corrects volume user permissions when using rootless containers or when containers dont set permissions themselves.
+# Corrects volume user permissions when using rootless containers or when containers do not set permissions themselves.
 set-permissions:
     @printf "Updating Permissions\n"
     {{compose-bin}} run --rm --no-deps --user root --entrypoint sh panel -c "chown caddy:caddy /data"
