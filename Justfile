@@ -17,7 +17,7 @@ set positional-arguments    := true
 
 _project-dir    := justfile_directory()
 _build-dir      := _project-dir + "/manifest/images"
-_deploy-dir	    := _project-dir + "/manifest/deploy"
+_deploy-dir     := _project-dir + "/manifest/deploy"
 _base-dir       := _deploy-dir + "/base"
 _templates-dir  := _deploy-dir + "/templates"
 
@@ -29,7 +29,7 @@ force           := "false"
 template        := "default" 
 override        := "template"
 
-build-env       := "--env-file ./manifest/build/build.env --file ./manifest/build/build.yml"
+build-env       := "--env-file ./manifest/build.env --file ./manifest/build.yml"
 
 ## CORE COMMANDS ##
     
@@ -49,8 +49,9 @@ status:
     printf "\n\n" 
     printf "Containers:\n"
 
+# Build containers in a special environment
 build *args:
-	{{compose-bin}} {{build-env}} build "$@"
+    {{compose-bin}} {{build-env}} build "$@"
 
 # Assigns a new tag for a given service
 build-tag service new-tag:
@@ -90,6 +91,13 @@ init:
 
     echo "Initialization done"
 
+# Installs a script to manage the project
+install dir="/usr/local/bin":
+    #!/bin/bash
+    echo "#!/bin/sh" > {{dir}}/{{file_stem(justfile_directory())}}
+    echo "" >> {{dir}}/{{file_stem(justfile_directory())}}
+    echo "just --justfile {{justfile()}} \"\$@\"" >> {{dir}}/{{file_stem(justfile_directory())}}
+
 # Add or modify shell-formatted environment files
 set-environment file env:
     #!/bin/bash
@@ -127,16 +135,16 @@ set-container-environment container env: (set-environment "conf.d/" + container 
 
 # Force reset the project
 reset:
-	#!/bin/bash
-	if [ "{{force}}" == "true" ]; then
-		git clean -x -d -f
-		git reset --hard
-	else
-		printf "!!ERROR!!\n\n"
-		printf "This command can only be issued with FORCE set to true!\n"
-		printf "If you wish to wipe this project, please perform a backup and run:\n\n"
-		printf "  just force=true reset\n\n"
-	fi
+    #!/bin/bash
+    if [ "{{force}}" == "true" ]; then
+        git clean -x -d -f
+        git reset --hard
+    else
+        printf "!!ERROR!!\n\n"
+        printf "This command can only be issued with FORCE set to true!\n"
+        printf "If you wish to wipe this project, please perform a backup and run:\n\n"
+        printf "  just force=true reset\n\n"
+    fi
 
 ######################
 ## PROJECT COMMANDS ##
@@ -149,10 +157,10 @@ reset:
 artisan *args:
     {{compose-bin}} run --rm --no-deps panel php artisan "$@"
 
-dump-dir          := justfile_directory() + "/data/dump"
+dump-dir                := invocation_directory()
 dump-mariadb-opt-flags  := "--single-transaction"
 
-# Dumps the application to a specified directory
+# Dumps the application to current or specified directory
 dump dir=dump-dir:
     #!/bin/bash
     set -euf -o pipefail
