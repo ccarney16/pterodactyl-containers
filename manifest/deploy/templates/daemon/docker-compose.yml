@@ -7,16 +7,6 @@
 version: "3.8"
 services:
   ##
-  # -- Let's Encrypt Certbot --
-  ##
-  certbot:
-    command: renew
-    image: docker.io/certbot/certbot:latest
-    profiles: [ letsencrypt ]
-    volumes:
-      - ./conf.d/letsencrypt:/etc/letsencrypt
-      - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
-  ##
   # -- Pterodactyl Daemon --
   # This service provides the wings runtime.
   ##
@@ -35,6 +25,5 @@ services:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
       - /tmp/pterodactyl/:/tmp/pterodactyl/
       - ./conf.d/daemon:/etc/pterodactyl
-      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
       - ./conf.d/certs:/etc/certs:ro
     working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}

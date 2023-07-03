@@ -35,7 +35,6 @@ services:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
       - /tmp/pterodactyl/:/tmp/pterodactyl/
       - ./conf.d/daemon:/etc/pterodactyl
-      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
       - ./conf.d/certs:/etc/certs:ro
     working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
   ##

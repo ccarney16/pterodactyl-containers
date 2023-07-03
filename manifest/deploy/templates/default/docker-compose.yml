@@ -8,16 +8,6 @@
 version: "3.8"
 services:
   ##
-  # -- Let's Encrypt Certbot --
-  ##
-  certbot:
-    command: renew
-    image: docker.io/certbot/certbot:latest
-    profiles: [ letsencrypt ]
-    volumes:
-      - ./conf.d/letsencrypt:/etc/letsencrypt
-      - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
-  ##
   # -- Panel Cron --
   # These are required for schedules and other misc tasks to 
   # function correctly.
@@ -49,7 +39,6 @@ services:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
       - /tmp/pterodactyl/:/tmp/pterodactyl/
       - ./conf.d/daemon:/etc/pterodactyl
-      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
       - ./conf.d/certs:/etc/certs:ro
     working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
   ##
@@ -82,8 +71,6 @@ services:
     restart: always
     volumes:
       - ./data/panel:/data
-      - ./conf.d/letsencrypt:/etc/letsencrypt
-      - ./conf.d/letsencrypt/webroot/.well-known:/var/www/html/public/.well-known
       - ./conf.d/certs:/etc/certs
     depends_on:
       mariadb:

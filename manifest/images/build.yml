@@ -1,0 +1,13 @@
+services:
+  panel:
+    build:
+      args:
+        VERSION: ${PANEL_VERSION}
+      context: ./manifest/images/panel
+    image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION}
+  daemon:
+    build:
+      args:
+        VERSION: ${DAEMON_VERSION}
+      context: ./manifest/images/daemon
+    image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION}
