@@ -8,12 +8,16 @@
 #  
 ###
 
+#######################
 ## JUSTFILE SETTINGS ##
+#######################
 
 set ignore-comments         := true
 set positional-arguments    := true
 
+###########################
 ## ENVIRONMENT VARIABLES ##
+###########################
 
 _project-dir    := justfile_directory()
 _build-dir      := _project-dir + "/manifest/images"
@@ -26,12 +30,14 @@ docker-bin      := `which docker`
 compose-bin     := `which docker-compose 2>/dev/null || echo $(which docker) compose`
 
 force           := "false"
-template        := "default" 
+template        := "default"
 override        := "template"
 
 build-env       := "--env-file ./manifest/build.env --file ./manifest/build.yml"
 
+###################
 ## CORE COMMANDS ##
+###################
     
 # Commands that represent the backbone of the deployment file.
 # These commands build and maintain the project.
@@ -92,11 +98,16 @@ init:
     echo "Initialization done"
 
 # Installs a script to manage the project
-install dir="/usr/local/bin":
+install file:
     #!/bin/bash
-    echo "#!/bin/sh" > {{dir}}/{{file_stem(justfile_directory())}}
-    echo "" >> {{dir}}/{{file_stem(justfile_directory())}}
-    echo "just --justfile {{justfile()}} \"\$@\"" >> {{dir}}/{{file_stem(justfile_directory())}}
+    if ! [ -f {{file}} ]; then
+        echo "#!/bin/sh" > {{file}}
+        echo "" >> {{file}}
+        echo "just --justfile {{justfile()}} \"\$@\"" >> {{file}}
+    else
+        echo "{{file}} already exists! exiting..."
+        exit 1
+    fi
 
 # Add or modify shell-formatted environment files
 set-environment file env:
