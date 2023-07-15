@@ -1,4 +1,4 @@
-FROM golang:alpine as build
+FROM golang:1.19-alpine as build
 
 ARG VERSION
 ENV VERSION=${VERSION}
