@@ -1,0 +1,15 @@
+# Base configuration for caddy
+# This configuration offers as a base in which
+# to import the configuration via /etc/caddy/Caddyfile.d
+{
+    storage file_system { 
+        root /var/lib/caddy
+    }
+    log default {
+        format console {
+            time_format rfc3339
+        }
+    }
+}
+
+import Caddyfile.d/*.caddyfile
