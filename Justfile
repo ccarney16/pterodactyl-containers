@@ -33,7 +33,7 @@ force           := "false"
 template        := "default"
 override        := "template"
 
-build-env       := "--env-file ./manifest/build.env --file ./manifest/build.yml"
+build-env       := "--env-file ./manifest/manifest.txt --file ./manifest/build.yml"
 
 ###################
 ## CORE COMMANDS ##

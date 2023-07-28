@@ -33,7 +33,7 @@ VOLUME [ "/var/lib/caddy" ]
 WORKDIR /var/www/html
 
 # Let tini execute /entrypoint. This allows proper reaping of processes
-USER caddy
+#USER caddy
 ENTRYPOINT [ "/usr/bin/tini", "--", "/entrypoint.sh" ]
 CMD [ "start-web" ]
 
@@ -47,7 +47,7 @@ ARG GIT_BRANCH=release/${VERSION}
 ENV VERSION=${VERSION}
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
-USER root
+#USER root
 
 RUN \
     microdnf install -y findutils git yarnpkg

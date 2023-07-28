@@ -5,7 +5,7 @@
 ###
 
 # Runs the initial configuration on every startup
-function startServer {
+function start_server {
 
     # Create and set permissions for php session directory
     echo "[init] Creating PHP Cache Directories"
@@ -50,11 +50,26 @@ function startServer {
     done;
 }
 
+# Get User ID
+user_id="$(id -u)"
+
+# init Startup script before performing anything else, ideally should be short and concise
+if [ -f /entrypoint.init.sh ]; then
+    source /entrypoint.init.sh
+fi
+
+# Set ownership of stdout/stderr and run as caddy if running as root
+# This is set to maintain compatibility with existing installations that ran mainly as root.
+if [ "$user_id" = "0" ]; then
+    chown --dereference caddy "/proc/$$/fd/1" "/proc/$$/fd/2"
+    exec runuser --user caddy -- "$BASH_SOURCE" "$@"
+fi
+
 case "${1}" in
     "")
         ;;
     "start-web")
-        startServer
+        start_server
         ;;
     "cron")
         yacron -c /etc/yacron.d

@@ -11,7 +11,7 @@ RUN \
   cd wings; \
   go build -ldflags="-s -w";
 
-FROM alpine:latest as final
+FROM --platform=$TARGETOS/$TARGETARCH docker.io/library/almalinux:9-minimal as final
 
 LABEL maintainer="Cameron Carney <ccarney16@live.com>"
 
@@ -19,7 +19,7 @@ ARG VERSION
 ENV VERSION=${VERSION}
 
 RUN \
-  apk add --no-cache ca-certificates tini tzdata; \
+  micro-dnf install -y ca-certificates tini tzdata; \
   mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl 
 
 # Copy wings from build stage
