@@ -1,4 +1,4 @@
-{$CADDY_APP_URL} {
+{$CADDY_APP_URL::80} {
         root * /var/www/html/public
         file_server
 

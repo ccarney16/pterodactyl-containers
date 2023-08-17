@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Configures Caddy's HTTP Configuration
-
 export CADDY_APP_URL=${APP_URL}
 
 case $SSL_CERT in

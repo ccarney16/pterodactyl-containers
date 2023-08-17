@@ -2,14 +2,17 @@
 # This configuration offers as a base in which
 # to import the configuration via /etc/caddy/Caddyfile.d
 {
-    storage file_system { 
-        root /var/lib/caddy
-    }
+    admin off
     log default {
         format console {
             time_format rfc3339
         }
     }
+    storage file_system { 
+        root /var/lib/caddy
+    }
 }
 
+# Import from static Caddyfile.d and user/app defined /var/lib/caddy
 import Caddyfile.d/*.caddyfile
+import /var/lib/caddy/*.caddyfile

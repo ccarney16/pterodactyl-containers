@@ -28,7 +28,7 @@ function start_server {
     php -m | tr '\n' ' ' | sed 's/\[/\n  &/g'
     printf "\n"
 
-    echo "--- Starting Web Server ---"
+    printf "\n--- Starting Web Server ---\n"
 
     # Run these as jobs and monitor their pid status
     /usr/sbin/php-fpm --nodaemonize --pid /var/lib/caddy/.php-fpm.pid & php_service_pid=$!

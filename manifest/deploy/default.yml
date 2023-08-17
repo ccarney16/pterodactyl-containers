@@ -1,10 +1,20 @@
 ###
-# Minimal Configuration File
+# Default Configuration File
 #
-# This configuration strips services to the absolute bare essentials to function.
-# Very useful for reverse proxy configurations where a user would override networking anyways.
+# Easiest and most straight forward way to deploy pterodactyl.
+# Contains everything needed to get up and running.
+# 
 ###
-version: "3.8"
+x-deploy:
+  # just copy, installs 
+  copy:
+    - source: ./manifest/deploy/base
+      destination: ./
+      options:
+        verbose: true
+  # just exec command, runs all commands listed here
+  exec:
+    - command: echo "Hello World!"
 services:
   ##
   # -- Panel Cron --
@@ -12,7 +22,7 @@ services:
   # function correctly.
   ##
   cron:
-    command: p:cron
+    command: cron
     env_file: ./conf.d/panel.env
     image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     profiles: [ panel ]
@@ -27,6 +37,9 @@ services:
     environment:
       - TZ=${DAEMON_TIMEZONE:-UTC}
     image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+    ports:
+      - 2022:2022
+      - 8080:8080
     privileged: true
     profiles: [ daemon ]
     restart: always
@@ -43,7 +56,7 @@ services:
   # Stores Server/User information
   ##
   mariadb:
-    image: docker.io/library/mariadb:10.8
+    image: docker.io/library/mariadb:10.11
     env_file: ./conf.d/mariadb.env
     networks:
       default:
@@ -60,10 +73,14 @@ services:
   panel:
     env_file: ./conf.d/panel.env
     image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
+    ports:
+      - 80:80
+      - 443:443
     profiles: [ panel ]
     restart: always
     volumes:
       - ./data/panel:/data
+      - ./conf.d/certs:/etc/certs
     depends_on:
       mariadb:
         condition: service_started
@@ -87,7 +104,7 @@ services:
   # -- Panel Worker --
   ##
   worker:
-    command: p:worker
+    command: worker
     env_file: ./conf.d/panel.env
     image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
     profiles: [ panel ]

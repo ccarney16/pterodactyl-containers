@@ -1,0 +1,182 @@
+#!/usr/bin/env -S just --justfile
+
+###
+#
+# -- ZYPHICO PROJECT DEPLOYMENT --
+#
+# 	This makefile serves as the core for many of the 
+# projects zyphico uses to deploy docker-compose projects.
+#  
+###
+
+#######################
+## JUSTFILE SETTINGS ##
+#######################
+
+set ignore-comments         := true
+set positional-arguments    := true
+
+###########################
+## ENVIRONMENT VARIABLES ##
+###########################
+
+_project-dir    := parent_directory(justfile_directory())
+_manifest-dir   := absolute_path(justfile_directory())
+_build-dir      := _manifest-dir + "/images"
+_deploy-dir     := _manifest-dir + "/deploy"
+
+# Determine the path of docker and docker-compose, or docker compose
+docker-bin      := `which docker`
+compose-bin     := `which docker-compose 2>/dev/null || echo $(which docker) compose`
+
+force           := "false"
+config          := "default"
+override        := "template"
+
+build-env       := "--env-file " + _manifest-dir + "/manifest.txt --file " + _manifest-dir + "/build.yml"
+
+###################
+## CORE COMMANDS ##
+###################
+    
+# Commands that represent the backbone of the deployment file.
+# These commands build and maintain the project.
+
+# Deploys the project in one command
+deploy: init copy exec
+
+# Build containers in a special environment
+build *args:
+    #!/bin/bash
+    {{compose-bin}} {{build-env}} build "$@"
+
+# Assigns a new tag for a given service
+build-tag service new-tag:
+    @{{docker-bin}} tag $({{compose-bin}} {{build-env}} config --format json | jq -r '.services.{{service}}.image') {{new-tag}}
+
+# Copies files/directories defined in docker-compose.yml
+copy:
+    #!/usr/bin/env nu
+    cd {{_project-dir}}
+
+    for copy in (open docker-compose.yml | get x-deploy.copy) {
+        
+        mut args = []
+
+        if $copy.options?.recursive?   == true { $args = ($args | append "--recursive")}
+        if $copy.options?.verbose?     == true { $args = ($args | append "--verbose")}
+        if $copy.options?.overwrite?   != true { $args = ($args | append "--no-clobber")}
+
+        $args = ($args | append $copy.source)
+        $args = ($args | append $copy.destination)
+
+        ^cp $args
+    }
+
+# Runs commands defined in docker-compose.yml
+exec:
+    #!/usr/bin/env nu
+
+    cd {{_project-dir}}
+
+    for exec in (open docker-compose.yml | get x-deploy.exec) {
+        ^$'($exec.0)' ($exec | skip 1)
+    }
+
+# Initializes a project by copying a docker-compose configuration to the base directory.
+init:
+    #!/usr/bin/env nu
+
+    cd {{_project-dir}}
+
+    if ("{{force}}" != "true") {
+        if ("docker-compose.yml" | path exists) {
+            print "Warning! This project has already been initialized! Running this command will override certain configuration files."
+            let yn = ([ "No" "Yes" ] | input list "Please make sure you have a proper backup of this project. Do you wish to continue?")
+            if ( $yn == "No" ) {
+                exit 1
+            }
+        }
+    }
+
+    # Check if the template exists first
+    ls {{_deploy-dir}}/{{config}}.yml out+err> /dev/null
+    
+    # Copy configuration 
+    print "Applying configuration."
+    ^cp -rfvT {{_deploy-dir}}/{{config}}.yml ./docker-compose.yml
+
+    print "Deployment done"
+
+
+# Installs a script to manage the project
+link file:
+    #!/bin/bash
+    if ! [ -f {{file}} ]; then
+        echo "#!/bin/sh" > {{file}}
+        echo "" >> {{file}}
+        echo "cd \"{{_project-dir}}\""
+        echo "just \"\$@\"" >> {{file}}
+    else
+        echo "{{file}} already exists! exiting..."
+        exit 1
+    fi
+
+# Add or modify shell-formatted environment files
+set-environment file env:
+    #!/usr/bin/env nu
+
+    cd {{_project-dir}}
+
+    if ("{{file}}" | path exists) {
+        mut split = ("{{env}}" | split row "=")
+        if ((^grep -q $"^($split.0)=" {{file}} | complete).exit_code == 0) {
+            ^sed -i $"s|($split.0)=.*|{{env}}|" {{file}}
+        } else {
+            "\n{{env}}" | save --append {{file}}
+        }
+    } else {
+        print "Missing file '{{file}}'..."
+        exit 1
+    }
+
+# Clears the environment variable from the selected file
+unset-environment file env:
+    #!/usr/bin/env nu
+
+    cd {{_project-dir}}
+
+    if ("{{file}}" | path exists) {
+        ^sed -i "/{{env}}=.*/d" {{file}}
+    } else {
+        print "Missing file '{{file}}'..."
+        exit 1
+    }
+
+# Set Docker Compose environment parameters
+set-compose-environment env: (set-environment ".env" env)
+# Set Docker Compose profiles
+set-compose-profiles profile: (set-environment ".env" "COMPOSE_PROFILES=" + profile)
+# Set Container Environment parameters
+set-container-environment container env: (set-environment "conf.d/" + container + ".env" env)
+
+# Force reset the project
+reset:
+    #!/bin/bash
+
+    cd {{_project-dir}}
+
+    if [ -d .git ]; then
+        printf "Error! This project does not contain a .git directory, exiting...\n"
+        exit 1
+    fi 
+
+    if [ "{{force}}" == "true" ]; then
+        git clean -x -d -f
+        git reset --hard
+    else
+        printf "!!ERROR!!\n\n"
+        printf "This command can only be issued with FORCE set to true!\n"
+        printf "If you wish to wipe this project, please perform a backup and run:\n\n"
+        printf "  just force=true reset\n\n"
+    fi

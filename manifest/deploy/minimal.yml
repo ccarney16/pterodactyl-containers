@@ -1,11 +1,9 @@
 ###
-# Default Configuration File
+# Minimal Configuration File
 #
-# Easiest and most straight forward way to deploy pterodactyl.
-# Contains everything needed to get up and running.
-# 
+# This configuration strips services to the absolute bare essentials to function.
+# Very useful for reverse proxy configurations where a user would override networking anyways.
 ###
-version: "3.8"
 services:
   ##
   # -- Panel Cron --
@@ -28,9 +26,6 @@ services:
     environment:
       - TZ=${DAEMON_TIMEZONE:-UTC}
     image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
-    ports:
-      - 2022:2022
-      - 8080:8080
     privileged: true
     profiles: [ daemon ]
     restart: always
@@ -64,14 +59,10 @@ services:
   panel:
     env_file: ./conf.d/panel.env
     image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
-    ports:
-      - 80:80
-      - 443:443
     profiles: [ panel ]
     restart: always
     volumes:
       - ./data/panel:/data
-      - ./conf.d/certs:/etc/certs
     depends_on:
       mariadb:
         condition: service_started
