@@ -9,6 +9,7 @@
         format console {
             time_format rfc3339
         }
+        output stdout
     }
 }
 
