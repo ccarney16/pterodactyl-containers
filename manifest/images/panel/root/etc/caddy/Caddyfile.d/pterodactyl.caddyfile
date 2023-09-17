@@ -13,8 +13,6 @@
                 X-Content-Type-Options "nosniff"
         }
 
-        log
-
         encode gzip zstd
 
         php_fastcgi unix//var/lib/caddy/php/php-fpm.sock
