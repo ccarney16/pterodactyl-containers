@@ -61,7 +61,7 @@ services:
   # Stores Server/User information
   ##
   mariadb:
-    image: docker.io/library/mariadb:10.8
+    image: docker.io/library/mariadb:10.11
     env_file: ./conf.d/mariadb.env
     networks:
       default:
