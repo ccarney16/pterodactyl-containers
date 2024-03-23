@@ -15,7 +15,9 @@
 
         encode gzip zstd
 
-        php_fastcgi unix//var/lib/caddy/php/php-fpm.sock
+        php_fastcgi unix//var/lib/caddy/php/php-fpm.sock {
+                {$CADDY_TRUSTED_PROXIES}
+        }
 
         try_files {path} {path}/ /index.php?{query}
 }

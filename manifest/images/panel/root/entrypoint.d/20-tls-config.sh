@@ -15,7 +15,7 @@ case $SSL_CERT in
         ;;
     none )
         printf "[tls-config] SSL_CERT is set to 'none', forcefully disabling https...\n"
-        export CADDY_APP_URL=":80"
+        export CADDY_APP_URL="http://"
         export CADDY_TLS_OPTIONS=""
         ;;
     * )
@@ -25,7 +25,7 @@ case $SSL_CERT in
         else
             # Fallback to disabling https as to prevent issues with legacy installations
             printf "[tls-config] Cannot find SSL certificate and/or key, not injecting tls rules.\n"
-            export CADDY_APP_URL=":80"
+            export CADDY_APP_URL="http://"
             export CADDY_TLS_OPTIONS=""
         fi
         ;;
