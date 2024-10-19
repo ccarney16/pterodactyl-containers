@@ -19,6 +19,10 @@ if [ ! -e /data/pterodactyl.conf ]; then
     echo "##" >> /data/pterodactyl.conf
     echo "" >> /data/pterodactyl.conf
     echo "APP_KEY=SomeRandomString3232RandomString" >> /data/pterodactyl.conf
+    echo "" >> /data/pterodactyl.conf
+    echo "HASHIDS_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)" >> /data/pterodactyl.conf
+    echo "HASHIDS_LENGTH=8" >> /data/pterodactyl.conf
+
 
     sleep 1
     php artisan key:generate --force --no-interaction

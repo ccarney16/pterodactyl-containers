@@ -6,10 +6,16 @@
         root /var/lib/caddy
     }
     log default {
-        format console {
-            time_format rfc3339
+        format filter {
+            fields {
+                request>remote_port delete
+                request>headers delete
+                resp_headers delete
+            }
+            wrap console {
+                time_format rfc3339
+            }
         }
-        output stdout
     }
 }
 

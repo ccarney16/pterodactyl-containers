@@ -4,6 +4,8 @@
 
         {$CADDY_TLS_OPTIONS}
 
+        log
+
         header {
                 -Server
                 -X-Powered-By
