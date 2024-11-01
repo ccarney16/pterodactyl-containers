@@ -4,7 +4,6 @@
 # This is considered the base configuration for this repo.
 # Everything to build and deploy pterodactyl is in here.
 ###
-version: "3.8"
 services:
   ##
   # -- Let's Encrypt Certbot --

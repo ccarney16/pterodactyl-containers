@@ -4,7 +4,6 @@
 # This config only provides the daemon and certbot.
 # Meant for multi machine network where a panel is already established.
 ###
-version: "3.8"
 services:
   ##
   # -- Let's Encrypt Certbot --

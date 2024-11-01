@@ -5,7 +5,6 @@
 # Contains everything needed to get up and running.
 # 
 ###
-version: "3.8"
 services:
   ##
   # -- Let's Encrypt Certbot --

@@ -4,7 +4,6 @@
 # This configuration strips services to the absolute bare essentials to function.
 # Very useful for reverse proxy configurations where a user would override networking anyways.
 ###
-version: "3.8"
 services:
   ##
   # -- Panel Cron --

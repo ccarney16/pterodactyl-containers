@@ -20,6 +20,8 @@ force=false
 enabled_services=""
 no_symlink=false
 
+override_profiles=false
+
 pin_name=""
 pin_no_copy=false
 
@@ -155,8 +157,14 @@ function deploy_project {
     fi
 
     # prepend some defaults to the dotenv_environment.
-    default_environment=(
-        "COMPOSE_PROFILES=${enabled_profiles}")
+    default_environment=()
+
+    # Only set default project profiles if it is not set or is being overridden by the user.
+    if [ -z ${COMPOSE_PROFILES+x} ] || [ "${override_profiles}" == "true" ]; then
+        default_environment=(
+            "COMPOSE_PROFILES=${enabled_profiles}")
+    fi
+
     dotenv_environment=("${default_environment[@]}" "${dotenv_environment[@]}")
 
     for entry in ${dotenv_environment[@]}; do
@@ -232,6 +240,11 @@ if [ ! -f ${_deploy_dir}/deploy.conf ]; then
     exit
 fi
 
+# Check if env exists and load in variables
+if [ -f .env ]; then
+    . .env
+fi
+
 # Enable defaults
 . ${_deploy_dir}/deploy.conf
 
@@ -268,6 +281,7 @@ for ((i=1; i<=$#; i++)); do
             --enable-profiles | -p)
                 ((i++))
                 enabled_profiles="${!i}"
+                override_profiles=true
                 ;;
             --environment | -e)
                 ((i++))
