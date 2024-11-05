@@ -17,6 +17,9 @@
             }
         }
     }
+    servers {
+        {$CADDY_TRUSTED_PROXIES}
+    }
 }
 
 import Caddyfile.d/*.caddyfile

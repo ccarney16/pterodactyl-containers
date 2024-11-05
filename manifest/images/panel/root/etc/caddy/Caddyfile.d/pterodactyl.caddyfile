@@ -3,7 +3,6 @@
         file_server
 
         {$CADDY_TLS_OPTIONS}
-        {$CADDY_TRUSTED_PROXIES}
 
         log
 
