@@ -5,19 +5,42 @@
         {$CADDY_TLS_OPTIONS}
 
         log
+        
+        @asset-skip {
+                path_regexp \.(js|css|png|jpe?g|gif|ico|woff|otf|ttf|eot|svg)$
+                path /assets/* /favicons/* /js/* /themes/*
+        }
+        log_skip @asset-skip
 
         header {
                 -Server
                 -X-Powered-By
-                Referrer-Policy "same-origin"
-                X-Frame-Options "deny"
-                X-XSS-Protection "1; mode=block"
+                
+                Strict-Transport-Security "max-age=16768000; preload;"
                 X-Content-Type-Options "nosniff"
+                X-XSS-Protection "1; mode=block;"
+                X-Robots-Tag "none"
+                Content-Security-Policy "frame-ancestors 'self'"
+                X-Frame-Options "DENY"
+                Referrer-Policy "same-origin"
         }
+
+        request_body {
+                max_size 100m
+        }
+
+        respond /.ht* 403
 
         encode gzip zstd
 
-        php_fastcgi unix//var/lib/caddy/php/php-fpm.sock
+        php_fastcgi unix//var/lib/caddy/php/php-fpm.sock {
+                env PHP_VALUE "upload_max_filesize = 100M
+                post_max_size = 100M"
+
+                read_timeout 300s
+                dial_timeout 300s
+                write_timeout 300s               
+        }
 
         try_files {path} {path}/ /index.php?{query}
 }

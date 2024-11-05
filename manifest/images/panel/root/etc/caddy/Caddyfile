@@ -2,6 +2,7 @@
 # This configuration offers as a base in which
 # to import the configuration via /etc/caddy/Caddyfile.d
 {
+    admin off
     storage file_system { 
         root /var/lib/caddy
     }
@@ -16,6 +17,7 @@
                 time_format rfc3339
             }
         }
+        output {$CADDY_ACCESSLOG_OUTPUT:stdout}
     }
     servers {
         {$CADDY_TRUSTED_PROXIES}

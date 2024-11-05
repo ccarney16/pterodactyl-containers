@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH docker.io/library/almalinux:9-minimal as base
+FROM --platform=$TARGETOS/$TARGETARCH docker.io/library/almalinux:9-minimal AS base
 
 LABEL maintainer="Cameron Carney <ccarney@zyphi.co>"
 
@@ -39,7 +39,7 @@ CMD [ "start-web" ]
 
 # Build phase of the container
 # This is where composer is added and pterodactyl properly setup
-FROM base as build
+FROM base AS build
 
 ARG VERSION
 ARG GIT_BRANCH=release/${VERSION}
@@ -73,7 +73,7 @@ RUN rm .env ./storage -rf
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
-FROM base as production
+FROM base AS production
 
 ARG VERSION
 ENV VERSION=${VERSION}
