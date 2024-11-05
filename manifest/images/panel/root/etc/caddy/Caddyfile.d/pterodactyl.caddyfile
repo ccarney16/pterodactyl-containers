@@ -3,6 +3,7 @@
         file_server
 
         {$CADDY_TLS_OPTIONS}
+        {$CADDY_TRUSTED_PROXIES}
 
         log
 
@@ -17,9 +18,7 @@
 
         encode gzip zstd
 
-        php_fastcgi unix//var/lib/caddy/php/php-fpm.sock {
-                {$CADDY_TRUSTED_PROXIES}
-        }
+        php_fastcgi unix//var/lib/caddy/php/php-fpm.sock
 
         try_files {path} {path}/ /index.php?{query}
 }
