@@ -12,12 +12,10 @@ services:
   ##
   cron:
     command: p:cron
-    env_file: ./conf.d/panel.env
-    image: ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
-    profiles: [ panel ]
-    restart: always
-    volumes:
-      - ./data/panel:/data
+    extends:
+      service: panel
+    ports: !reset
+
   ##
   # -- Pterodactyl Daemon --
   # This service provides the wings runtime.
@@ -37,6 +35,7 @@ services:
       - ./conf.d/letsencrypt:/etc/letsencrypt:ro
       - ./conf.d/certs:/etc/certs:ro
     working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
+
   ##
   # -- MariaDB --
   # Required for the control panel to work.
@@ -53,6 +52,7 @@ services:
     restart: always
     volumes:
       - ./data/mysql:/var/lib/mysql
+
   ##
   # -- Pterodactyl Panel --
   # This is the container that provides the main web interface.
@@ -69,6 +69,7 @@ services:
         condition: service_started
       redis:
         condition: service_started
+
   ##
   # -- Redis --
   ##
@@ -83,14 +84,12 @@ services:
           - cache
     profiles: [ panel ]
     restart: always
+
   ##
   # -- Panel Worker --
   ##
   worker:
     command: p:worker
-    env_file: ./conf.d/panel.env
-    image: docker.io/ccarney16/pterodactyl-panel:${PANEL_VERSION:-latest}
-    profiles: [ panel ]
-    restart: always
-    volumes:
-      - ./data/panel:/data
+    extends:
+      service: panel
+    ports: !reset
