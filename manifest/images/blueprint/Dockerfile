@@ -1,4 +1,4 @@
-FROM --platform=$TARGETOS/$TARGETARCH docker.io/ccarney16/pterodactyl-panel:v1.11.7 AS base
+FROM --platform=$TARGETOS/$TARGETARCH docker.io/ccarney16/pterodactyl-panel:v1.11.10 AS base
 
 # Required for tput (used in blueprint.sh)
 ENV TERM=xterm
@@ -16,11 +16,9 @@ RUN \
     cp .env.example /data/storage/pterodactyl.conf && \
     curl -Lo blueprint.zip $(curl -s https://api.github.com/repos/BlueprintFramework/framework/releases/latest | grep 'browser_download_url' | cut -d '"' -f 4) && \
     unzip -o blueprint.zip -d /var/www/html && \
-    cat blueprint.sh | \
-        sed -i -E \
-            -e "s|WEBUSER=\"www-data\" #;|WEBUSER=\"caddy\" #;|g" \
-            -e "s|OWNERSHIP=\"www-data:www-data\" #;|OWNERSHIP=\"caddy:caddy\" #;|g" \
-            blueprint.sh && \
+    echo "WEBUSER=caddy" >> .blueprintrc && \
+    echo "OWNERSHIP=caddy:caddy" >> .blueprintrc && \
+    echo "FOLDER=$(pwd)" >> .blueprintrc && \
     bash blueprint.sh && \
     chown -R caddy:caddy * && \
     find storage/ -mindepth 1 -type d >> .storage.tmpl && \
