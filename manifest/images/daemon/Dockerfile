@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine as build
+FROM golang:1.23.7-alpine as build
 
 ARG VERSION
 ENV VERSION=${VERSION}
@@ -9,7 +9,7 @@ RUN \
   cd /; \
   git clone https://github.com/pterodactyl/wings --depth 1 --branch ${GIT_BRANCH}; \
   cd wings; \
-  go build -ldflags="-s -w";
+  CGO_ENABLED=0 go build -ldflags="-s -w" -v -trimpath;
 
 FROM alpine:latest as final
 
