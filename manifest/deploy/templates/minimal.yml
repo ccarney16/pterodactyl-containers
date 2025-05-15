@@ -30,10 +30,10 @@ services:
     volumes:
       - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
-      - /tmp/pterodactyl/:/tmp/pterodactyl/
-      - ./conf.d/daemon:/etc/pterodactyl
-      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
-      - ./conf.d/certs:/etc/certs:ro
+      - /tmp/pterodactyl/:/tmp/pterodactyl/:z
+      - ./conf.d/daemon:/etc/pterodactyl:z
+      - ./conf.d/letsencrypt:/etc/letsencrypt:ro,z
+      - ./conf.d/certs:/etc/certs:ro,z
     working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
 
   ##
@@ -51,7 +51,7 @@ services:
     profiles: [ panel ]
     restart: always
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql:z
 
   ##
   # -- Pterodactyl Panel --
@@ -63,7 +63,7 @@ services:
     profiles: [ panel ]
     restart: always
     volumes:
-      - ./data/panel:/data
+      - ./data/panel:/data:z
     depends_on:
       mariadb:
         condition: service_started
