@@ -18,9 +18,15 @@ LABEL maintainer="Cameron Carney <ccarney16@live.com>"
 ARG VERSION
 ENV VERSION=${VERSION}
 
+ENV WINGS_USERNAME=pterodactyl
+ENV WINGS_UID=100
+ENV WINGS_GID=101
+
+
 RUN \
   apk add --no-cache ca-certificates tini tzdata; \
-  mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl 
+  mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl \
+  echo "ID=\"distroless\"" > /etc/os-release
 
 # Copy wings from build stage
 COPY --from=build /wings/wings /usr/local/bin
