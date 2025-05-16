@@ -24,9 +24,9 @@ ENV WINGS_GID=101
 
 
 RUN \
-  apk add --no-cache ca-certificates tini tzdata; \
-  mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl \
-  echo "ID=\"distroless\"" > /etc/os-release
+  apk add --no-cache ca-certificates tini tzdata \
+  && mkdir -p /etc/pterodactyl /var/log/pterodactyl /tmp/pterodactyl \
+  && echo "ID=\"distroless\"" > /etc/os-release
 
 # Copy wings from build stage
 COPY --from=build /wings/wings /usr/local/bin
