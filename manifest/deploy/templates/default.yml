@@ -111,8 +111,7 @@ services:
   ##
   worker:
     command: p:worker
- cron:
-    command: p:cron
     extends:
       service: panel
     ports: !reset
+
