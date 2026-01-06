@@ -17,7 +17,7 @@ RUN microdnf install -y shadow-utils tzdata && \
 RUN rpm --install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
     rpm --install https://rpms.remirepo.net/enterprise/remi-release-9.rpm && \
     curl -Lo /etc/yum.repos.d/caddy.repo https://copr.fedorainfracloud.org/coprs/g/caddy/caddy/repo/epel-9/group_caddy-caddy-epel-9.repo && \
-    microdnf module enable -y php:remi-${PHP_VERSION} nodejs:20 && \
+    microdnf module enable -y php:remi-${PHP_VERSION} nodejs:22 && \
     eval microdnf install -y ca-certificates caddy php-{$PHP_MODULES} \
         python3 python3-pip tini ${EXTRA_PACKAGES} && \
     pip3 install yacron && \
