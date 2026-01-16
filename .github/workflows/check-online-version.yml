@@ -20,7 +20,7 @@ jobs:
       id: latest_versions
       run: |
         latest_info="$(curl -s "https://cdn.pterodactyl.io/releases/latest.json")"
-        echo "::set-output name=panel_version::v$(echo $latest_info | jq -r '.panel')"
+        echo "::set-output name=panel_version::$(echo $latest_info | jq -r '.panel')"
         echo "::set-output name=daemon_version::v$(echo $latest_info | jq -r '.wings')"
                 
     - name: Get Panel Docker version
