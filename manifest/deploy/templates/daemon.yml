@@ -30,10 +30,11 @@ services:
     profiles: [ daemon ]
     restart: always
     volumes:
-      - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
+      - ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}:z
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
-      - /tmp/pterodactyl/:/tmp/pterodactyl/
-      - ./conf.d/daemon:/etc/pterodactyl
-      - ./conf.d/letsencrypt:/etc/letsencrypt:ro
-      - ./conf.d/certs:/etc/certs:ro
+      - /tmp/pterodactyl:/tmp/pterodactyl:z
+      - /run/wings:/run/wings:z
+      - ./conf.d/daemon:/etc/pterodactyl:z
+      - ./conf.d/letsencrypt:/etc/letsencrypt:ro,z
+      - ./conf.d/certs:/etc/certs:ro,z
     working_dir: ${DAEMON_DATA_DIRECTORY:-/var/lib/pterodactyl}
