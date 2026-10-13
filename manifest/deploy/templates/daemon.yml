@@ -22,7 +22,7 @@ services:
   daemon:
     environment:
       - TZ=${DAEMON_TIMEZONE:-UTC}
-    image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-latest}
+    image: docker.io/ccarney16/pterodactyl-daemon:${DAEMON_VERSION:-v2-devel}
     ports:
       - 2022:2022
       - 8080:8080

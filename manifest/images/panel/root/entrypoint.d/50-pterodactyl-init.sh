@@ -4,6 +4,9 @@ cat .storage.tmpl | while read line; do
     mkdir -p "/data/${line}"
 done
 
+mkdir /data/extensions
+mkdir /data/extension-assets
+
 # Generate config file if it doesnt exist
 if [ ! -e /data/pterodactyl.conf ]; then
     printf "\n[pterodactyl-init] Generating Application Key...\n"

@@ -3,7 +3,7 @@ FROM --platform=$TARGETOS/$TARGETARCH docker.io/library/almalinux:9-minimal AS b
 LABEL maintainer="Cameron Carney <ccarney@zyphi.co>"
 
 # Allows the end user to customize what php modules and packages they want on buildtime
-ENV PHP_VERSION=8.2
+ENV PHP_VERSION=8.4
 ENV PHP_MODULES=bcmath,cli,common,fpm,gd,gmp,intl,json,mbstring,mysqlnd,opcache,pdo,pecl-zip,process,soap,sodium,xml,zstd
 ENV EXTRA_PACKAGES="nmap-ncat mariadb"
 
@@ -18,7 +18,7 @@ RUN rpm --install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.no
     rpm --install https://rpms.remirepo.net/enterprise/remi-release-9.rpm && \
     curl -Lo /etc/yum.repos.d/caddy.repo https://copr.fedorainfracloud.org/coprs/g/caddy/caddy/repo/epel-9/group_caddy-caddy-epel-9.repo && \
     microdnf module enable -y php:remi-${PHP_VERSION} nodejs:22 && \
-    eval microdnf install -y ca-certificates caddy php-{$PHP_MODULES} \
+    eval microdnf install -y ca-certificates caddy php-{$PHP_MODULES} nodejs npm \
         python3 python3-pip tini ${EXTRA_PACKAGES} && \
     pip3 install yacron && \
     microdnf clean all && \
@@ -42,7 +42,7 @@ CMD [ "start-web" ]
 FROM base AS build
 
 ARG VERSION
-ARG GIT_BRANCH=release/${VERSION}
+ARG GIT_BRANCH=${VERSION}
 
 ENV VERSION=${VERSION}
 ENV NODE_OPTIONS=--openssl-legacy-provider
@@ -50,7 +50,7 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 #USER root
 
 RUN \
-    microdnf install -y findutils git yarnpkg
+    microdnf install -y findutils git
 
 RUN \
     git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch ${GIT_BRANCH} && \
@@ -59,17 +59,20 @@ RUN \
     find storage -type d > .storage.tmpl && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
     cp .env.example .env && \
-    composer install --ansi --no-dev --optimize-autoloader && \
-    chown -R caddy:caddy *;
+    composer install --no-dev --optimize-autoloader && \
+    npm ci --no-audit --no-fund && \
+    npm run build:force && \
+    mkdir -p bootstrap/cache && \ 
+    chown -R caddy:caddy bootstrap/cache;
 
-RUN \
-    yarn install --production && \
-    yarn add cross-env && \
-    yarn run build:production && \
-    rm -rf node_modules
+# RUN \
+#     yarn install --production && \
+#     yarn add cross-env && \
+#     yarn run build:production && \
+#     rm -rf node_modules
 
 # Remove persistent data folders as they will be symlinked further down
-RUN rm .env ./storage -rf
+RUN rm -rf .env ./storage extensions public/assets/extensions
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
@@ -78,11 +81,13 @@ FROM base AS production
 ARG VERSION
 ENV VERSION=${VERSION}
 
-COPY --from=build --chown=caddy:caddy /var/www /var/www
+COPY --from=build /var/www /var/www
 
 # Symlink storage, config and cache to /data
 RUN \
-    ln -s /data/storage storage; \
+    ln -s /data/extensions extensions && \
+    ln -s /data/extension-assets public/assets/extensions && \
+    ln -s /data/storage storage && \
     ln -s /data/pterodactyl.conf .env;
 
 VOLUME [ "/data" ]
