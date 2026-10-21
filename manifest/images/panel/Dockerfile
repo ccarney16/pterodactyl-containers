@@ -3,7 +3,7 @@ FROM --platform=$TARGETOS/$TARGETARCH docker.io/library/almalinux:9-minimal AS b
 LABEL maintainer="Cameron Carney <ccarney@zyphi.co>"
 
 # Allows the end user to customize what php modules and packages they want on buildtime
-ENV PHP_VERSION=8.2
+ENV PHP_VERSION=8.4
 ENV PHP_MODULES=bcmath,cli,common,fpm,gd,gmp,intl,json,mbstring,mysqlnd,opcache,pdo,pecl-zip,process,soap,sodium,xml,zstd
 ENV EXTRA_PACKAGES="nmap-ncat mariadb"
 
