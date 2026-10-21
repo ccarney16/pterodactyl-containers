@@ -6,7 +6,7 @@ Pterodactyl, a free an open source agnostic game panel... In a Container!
 
 ## Installing
 
-Refer to the github wiki for the quick overview and detailed setup.
+Refer to [the github wiki](https://github.com/ccarney16/pterodactyl-containers/wiki) for the quick overview and detailed setup.
 
 ## Contributing
 
