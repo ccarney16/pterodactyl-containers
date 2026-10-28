@@ -38,5 +38,4 @@ jobs:
         build-args: VERSION=${{ steps.read_version.outputs.version }}
         push: true
         tags: |
-          "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PANEL_PROJECT_NAME }}:latest"
           "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PANEL_PROJECT_NAME }}:${{ steps.read_version.outputs.version }}"

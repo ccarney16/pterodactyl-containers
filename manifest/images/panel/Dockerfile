@@ -42,10 +42,10 @@ CMD [ "start-web" ]
 FROM base AS build
 
 ARG VERSION
-ARG GIT_BRANCH=${VERSION}
+ARG GIT_BRANCH=release/${VERSION}
 
 ENV VERSION=${VERSION}
-ENV NODE_OPTIONS=--openssl-legacy-provider
+#ENV NODE_OPTIONS=--openssl-legacy-provider
 
 #USER root
 
